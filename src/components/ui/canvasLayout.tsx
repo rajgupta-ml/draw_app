@@ -1,18 +1,18 @@
 "use client";
 import { useWindowDimesion } from "@/hooks/useWindowDimension";
 import { CanvasManager } from "@/manager/CanvasManager";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import Toolbar from "./Toolbar";
 
 const CanvasLayout = () => {
   const { width, height } = useWindowDimesion();
-  const [isCanvasReady, setIsCanvasReady] = useState(false);
+  const canvasManager = useRef<CanvasManager>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [canvasManager, setCanavsManager] = useState<CanvasManager>()
 
   useEffect(() => {
     const canvas = canvasRef.current;
 
-    if (!canvas ) {
+    if (!canvas || canvasManager.current ) {
       return;
     }
 
@@ -20,24 +20,25 @@ const CanvasLayout = () => {
     if (!ctx) {
       return;
     }
-
-    setIsCanvasReady(true);
-    setCanavsManager(new CanvasManager(canvas, ctx));
-    canvasManager?.addEventListners();
-    canvasManager?.drawCanvas();
-
+    
+    canvasManager.current = new CanvasManager(canvas, ctx)
+    canvasManager.current.addEventListners();
     return () => {
-      canvasManager?.destroyEventListners();
-    }
-  }, [width, height, isCanvasReady]);
+      canvasManager.current?.destroyEventListners()
+      canvasManager.current = null;
+    };
+  }, []);
 
   return (
-    <canvas
+    <>
+      <Toolbar setTool = {canvasManager.current?.setTool} getTool = {canvasManager.current?.getTool}/>
+      <canvas
       className="bg-background"
       ref={canvasRef}
       width={width}
       height={height}
-    ></canvas>
+      ></canvas>
+    </>
   );
 };
 

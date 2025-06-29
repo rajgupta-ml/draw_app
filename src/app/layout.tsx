@@ -22,13 +22,17 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable}`} suppressHydrationWarning>
       <body>
+        <script
+          crossOrigin="anonymous"
+          src="//unpkg.com/react-scan/dist/auto.global.js"
+        />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <div className="fixed top-5 right-5">
+          <div className="fixed top-5 right-5 z-10">
             <ThemeToggle></ThemeToggle>
           </div>
           {children}
