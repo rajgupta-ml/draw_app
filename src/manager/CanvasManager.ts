@@ -50,7 +50,6 @@ export class CanvasManager {
         endY : 0,
     }
     constructor(canvas : HTMLCanvasElement, ctx : CanvasRenderingContext2D) {
-        console.log("I am getting called")
         this.canvas = canvas;
         this.roughCanvas = new RoughCanvas(this.canvas);
         this.selectedTool = "rect",
@@ -59,16 +58,13 @@ export class CanvasManager {
 
     // Add And Remove Event Listner
     addEventListners = () => {
-        console.log("Added Even Listners");
         this.canvas.addEventListener("mousedown", this.handleMouseDown)
         this.canvas.addEventListener("mouseup",this.handleHouseUp)
         this.canvas.addEventListener("mousemove", this.handleHouseMove)
         this.canvas.addEventListener("wheel", this.handleScroll)
-
     }
 
     destroyEventListners = () => {
-        console.log("Remvoved Event Listners");
         this.canvas.removeEventListener("mousedown", this.handleMouseDown )
         this.canvas.removeEventListener("mouseup", this.handleHouseUp )
         this.canvas.removeEventListener("mousemove", this.handleHouseMove)
@@ -95,10 +91,8 @@ export class CanvasManager {
 
 
     private handleHouseMove = (e : MouseEvent) => {
-
-
-        if(this.clicked){
-
+      
+        if(this.clicked ){
             const {x,y } = this.getCoordinateAdjustedByScroll(e.clientX, e.clientY)
             this.shapePositions = {
                 ...this.shapePositions,
@@ -148,60 +142,72 @@ export class CanvasManager {
     }
 
         // Updated RenderOrCreateShape
-        private RenderOrCreateShape = (existingShape?: Shape) : Shape | null => { 
-            const currentTool = this.getTool(); 
-            const toolToRender = existingShape?.type ?? currentTool; 
+    private RenderOrCreateShape = (existingShape?: Shape) : Shape | null => { 
+        const currentTool = this.getTool(); 
+        const toolToRender = existingShape?.type ?? currentTool; 
+    
+        let newShape: Shape | null = null;
         
-            let newShape: Shape | null = null;
-            
-            switch (toolToRender) {
-                case "rect": {
-                    const x = existingShape && existingShape.type === "rect" ? existingShape.x : Math.min(this.shapePositions.startX, this.shapePositions.endX);
-                    const y = existingShape && existingShape.type === "rect" ? existingShape.y : Math.min(this.shapePositions.startY, this.shapePositions.endY);
-                    const w = existingShape && existingShape.type === "rect" ? existingShape.w : Math.abs(this.shapePositions.startX - this.shapePositions.endX);
-                    const h = existingShape && existingShape.type === "rect" ? existingShape.h : Math.abs(this.shapePositions.startY - this.shapePositions.endY);
+        switch (toolToRender) {
+            case "rect": {
+                const x = existingShape && existingShape.type === "rect" ? existingShape.x : Math.min(this.shapePositions.startX, this.shapePositions.endX);
+                const y = existingShape && existingShape.type === "rect" ? existingShape.y : Math.min(this.shapePositions.startY, this.shapePositions.endY);
+                const w = existingShape && existingShape.type === "rect" ? existingShape.w : Math.abs(this.shapePositions.startX - this.shapePositions.endX);
+                const h = existingShape && existingShape.type === "rect" ? existingShape.h : Math.abs(this.shapePositions.startY - this.shapePositions.endY);
                 
-                    this.roughCanvas.rectangle(x, y, w, h);    
-                    if (!existingShape) {
-                        newShape = { type: "rect", x, y, w, h };
-                    }
-                    break;
-                }
-                case "eclipse": {
-                    const x = existingShape && existingShape.type === "eclipse" ? existingShape.x : Math.min(this.shapePositions.startX, this.shapePositions.endX);
-                    const y = existingShape && existingShape.type === "eclipse" ? existingShape.y : Math.min(this.shapePositions.startY, this.shapePositions.endY);
-                    const w = existingShape && existingShape.type === "eclipse" ? existingShape.w : Math.abs(this.shapePositions.startX - this.shapePositions.endX);
-                    const h = existingShape && existingShape.type === "eclipse" ? existingShape.h : Math.abs(this.shapePositions.startY - this.shapePositions.endY);
-                    
-                    this.roughCanvas.ellipse(x, y, w, h);
-                    
-                    if (!existingShape) {
-                        newShape = { type: "eclipse", x, y, w, h };
-                    }
-                    break;
-                }
-                case "line": {
+
+                this.roughCanvas.rectangle(x, y, w, h, {
+                    roughness: 2,
+                 
+                    stroke: 'black',
+                    fill: 'red',
+                    fillStyle: 'hachure',
+                    seed : 1,
+                    // No separate option for rounding here:
+                    // Use the "curveStepCount" for smoother rounding effect, but...
+                    });    
+
                 
-                    const x1 = existingShape && existingShape.type === "line" ? existingShape.x1 : this.shapePositions.startX;
-                    const y1 = existingShape && existingShape.type === "line" ? existingShape.y1 : this.shapePositions.startY;
-                    const x2 = existingShape && existingShape.type === "line" ? existingShape.x2 : this.shapePositions.endX;
-                    const y2 = existingShape && existingShape.type === "line" ? existingShape.y2 : this.shapePositions.endY;
-    
-                    this.roughCanvas.line(x1, y1, x2, y2);
-                    
-                    if (!existingShape) {
-                        newShape = { type: "line", x1, y1, x2, y2 };
-                    }
-                    break;
+                if (!existingShape) {
+                    newShape = { type: "rect", x, y, w, h };
                 }
-               
-                default:
-               
-                    break;
+                break;
             }
-    
-            return newShape;
+            case "eclipse": {
+                const x = existingShape && existingShape.type === "eclipse" ? existingShape.x : Math.min(this.shapePositions.startX, this.shapePositions.endX);
+                const y = existingShape && existingShape.type === "eclipse" ? existingShape.y : Math.min(this.shapePositions.startY, this.shapePositions.endY);
+                const w = existingShape && existingShape.type === "eclipse" ? existingShape.w : Math.abs(this.shapePositions.startX - this.shapePositions.endX);
+                const h = existingShape && existingShape.type === "eclipse" ? existingShape.h : Math.abs(this.shapePositions.startY - this.shapePositions.endY);
+                
+                this.roughCanvas.ellipse(x, y, w, h);
+                
+                if (!existingShape) {
+                    newShape = { type: "eclipse", x, y, w, h };
+                }
+                break;
+            }
+            case "line": {
+            
+                const x1 = existingShape && existingShape.type === "line" ? existingShape.x1 : this.shapePositions.startX;
+                const y1 = existingShape && existingShape.type === "line" ? existingShape.y1 : this.shapePositions.startY;
+                const x2 = existingShape && existingShape.type === "line" ? existingShape.x2 : this.shapePositions.endX;
+                const y2 = existingShape && existingShape.type === "line" ? existingShape.y2 : this.shapePositions.endY;
+
+                this.roughCanvas.line(x1, y1, x2, y2);
+                
+                if (!existingShape) {
+                    newShape = { type: "line", x1, y1, x2, y2 };
+                }
+                break;
+            }
+            
+            default:
+            
+                break;
         }
+
+        return newShape;
+    }
 
 
     // Setter and Getter Methods

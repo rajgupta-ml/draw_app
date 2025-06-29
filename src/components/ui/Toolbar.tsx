@@ -67,7 +67,7 @@ const  Toolbar = ({setTool, getTool} : IToolbar) => {
     }
   return (
     <div className='fixed top-5 left-0 right-0 h-12 flex justify-center items-cente p-0'>
-        <div className="border-border bg-accent w-md rounded-md flex items-center justify-between p-1">
+        <div className="border-border bg-muted  w-md rounded-md flex items-center justify-between p-1">
             {icons.map(({name, Component, number}, index) => {
                     return (
                         <div
@@ -75,8 +75,8 @@ const  Toolbar = ({setTool, getTool} : IToolbar) => {
                         key = {index} 
                         className=
                         {cn(
-                            "flex gap-1 items-end hover:bg-muted/80 p-2 cursor-pointer text-muted transition-all duration-300",
-                            getTool && getTool() == name ? "bg-primary-foreground text-primary hover:bg-primary-foreground" : "",
+                            " flex gap-1 items-end hover:bg-accent hover:text-accent-foreground p-2 cursor-pointer text-muted-foreground transition-all duration-300 rounded-md",
+                            getTool && getTool() == name ? "bg-accent text-accent-foreground" : "",
                         )}> 
                             <Component></Component>
                         </div>

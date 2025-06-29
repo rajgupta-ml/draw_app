@@ -29,6 +29,13 @@ const CanvasLayout = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if(canvasRef.current){
+      canvasRef.current.width = width;
+      canvasRef.current.height = height
+    }
+  },[width, height])
+
   return (
     <>
       <Toolbar setTool = {canvasManager.current?.setTool} getTool = {canvasManager.current?.getTool}/>
