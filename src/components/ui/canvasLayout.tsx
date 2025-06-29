@@ -36,6 +36,9 @@ const CanvasLayout = () => {
     }
   },[width, height])
 
+
+  
+
   return (
     <>
       <Toolbar setTool = {canvasManager.current?.setTool} getTool = {canvasManager.current?.getTool}/>

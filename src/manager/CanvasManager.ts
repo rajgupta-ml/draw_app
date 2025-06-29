@@ -43,6 +43,7 @@ export class CanvasManager {
     private scrollPositionY : number = 0;
     private shapes : Shape[] = [];
     private selectedTool : Tools
+    private dragged = false;
     private shapePositions = {
         startX : 0,
         startY : 0,
@@ -59,14 +60,14 @@ export class CanvasManager {
     // Add And Remove Event Listner
     addEventListners = () => {
         this.canvas.addEventListener("mousedown", this.handleMouseDown)
-        this.canvas.addEventListener("mouseup",this.handleHouseUp)
+        this.canvas.addEventListener("mouseup",this.handleMouseUp)
         this.canvas.addEventListener("mousemove", this.handleHouseMove)
         this.canvas.addEventListener("wheel", this.handleScroll)
     }
 
     destroyEventListners = () => {
         this.canvas.removeEventListener("mousedown", this.handleMouseDown )
-        this.canvas.removeEventListener("mouseup", this.handleHouseUp )
+        this.canvas.removeEventListener("mouseup", this.handleMouseUp )
         this.canvas.removeEventListener("mousemove", this.handleHouseMove)
         this.canvas.removeEventListener("wheel", this.handleScroll)
 
@@ -91,8 +92,7 @@ export class CanvasManager {
 
 
     private handleHouseMove = (e : MouseEvent) => {
-      
-        if(this.clicked ){
+        if(this.clicked){
             const {x,y } = this.getCoordinateAdjustedByScroll(e.clientX, e.clientY)
             this.shapePositions = {
                 ...this.shapePositions,
@@ -100,17 +100,21 @@ export class CanvasManager {
                 endY :y  
             }
             this.drawCanvas({isScrolling : false})
+            this.dragged = true;
 
         }
     }
     
-    private handleHouseUp = (e : MouseEvent) => {
+    private handleMouseUp = (e : MouseEvent) => {
         this.clicked = false
-        const shape = this.drawCanvas({isScrolling : false});
-        if(shape){
-            this.shapes.push(shape);
-            console.log(this.shapes)
+        if(this.dragged){
+            const shape = this.drawCanvas({isScrolling : false});
+            if(shape){
+                this.shapes.push(shape);
+            }
+            this.dragged = false;
         }
+        
     }
   
 
@@ -123,7 +127,7 @@ export class CanvasManager {
         return {x,y}
     }
 
-    drawCanvas = ({isScrolling} : {isScrolling : boolean}) : Shape | null  => {
+    drawCanvas = ({isScrolling} : {isScrolling : boolean}) => {
     
         this.ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
         this.ctx.save();
@@ -137,7 +141,7 @@ export class CanvasManager {
         }
 
         this.ctx.restore();
-
+        
         return newShape
     }
 
