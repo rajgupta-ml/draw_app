@@ -1,36 +1,43 @@
 "use client";
 import { useWindowDimesion } from "@/hooks/useWindowDimension";
-import { Loader2 } from "lucide-react";
+import { CanvasManager } from "@/manager/CanvasManager";
 import React, { useEffect, useRef, useState } from "react";
 
 const CanvasLayout = () => {
-  const [isloading, setIsLoading] = useState(true);
   const { width, height } = useWindowDimesion();
-  const CanvasRef = useRef(null);
+  const [isCanvasReady, setIsCanvasReady] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [canvasManager, setCanavsManager] = useState<CanvasManager>()
 
   useEffect(() => {
-    setIsLoading(false);
-  }, []);
+    const canvas = canvasRef.current;
 
-  if (isloading || width == 0 || height == 0) {
-    <Loader></Loader>;
-  }
+    if (!canvas ) {
+      return;
+    }
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return;
+    }
+
+    setIsCanvasReady(true);
+    setCanavsManager(new CanvasManager(canvas, ctx));
+    canvasManager?.addEventListners();
+    canvasManager?.drawCanvas();
+
+    return () => {
+      canvasManager?.destroyEventListners();
+    }
+  }, [width, height, isCanvasReady]);
 
   return (
     <canvas
       className="bg-background"
-      ref={CanvasRef}
+      ref={canvasRef}
       width={width}
       height={height}
     ></canvas>
-  );
-};
-
-const Loader = () => {
-  return (
-    <div>
-      <Loader2></Loader2>
-    </div>
   );
 };
 
