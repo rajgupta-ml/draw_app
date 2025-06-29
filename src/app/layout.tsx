@@ -1,3 +1,5 @@
+import { ThemeToggle } from "@/components/ui/ToggleTheme";
+import { ThemeProvider } from "@/Provider/themeProvider";
 import "@/styles/globals.css";
 
 import { type Metadata } from "next";
@@ -18,8 +20,20 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable}`}>
-      <body>{children}</body>
+    <html lang="en" className={`${geist.variable}`} suppressHydrationWarning>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <div className="fixed top-5 right-5">
+            <ThemeToggle></ThemeToggle>
+          </div>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
