@@ -1,7 +1,7 @@
 "use client";
 import { useWindowDimesion } from "@/hooks/useWindowDimension";
 import { CanvasManager } from "@/manager/CanvasManager";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import Toolbar from "./Toolbar";
 
 const CanvasLayout = () => {
@@ -22,9 +22,9 @@ const CanvasLayout = () => {
     }
     
     canvasManager.current = new CanvasManager(canvas, ctx)
-    canvasManager.current.addEventListners();
+    canvasManager.current.addEventListeners();
     return () => {
-      canvasManager.current?.destroyEventListners()
+      canvasManager.current?.destroyEventListeners()
       canvasManager.current = null;
     };
   }, []);
