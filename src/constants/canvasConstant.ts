@@ -1,7 +1,5 @@
-
 export const shapeConfig = {
-    roughness: 2,
-    stroke: 'white',
-    seed : 1,
-   
-}
+  roughness: 2,
+  stroke: "white",
+  seed: 1,
+};

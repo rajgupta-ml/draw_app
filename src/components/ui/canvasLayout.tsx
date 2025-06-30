@@ -6,13 +6,13 @@ import Toolbar from "./Toolbar";
 
 const CanvasLayout = () => {
   const { width, height } = useWindowDimesion();
-  const canvasManager = useRef<CanvasManager>(null)
+  const canvasManager = useRef<CanvasManager>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
 
-    if (!canvas || canvasManager.current ) {
+    if (!canvas || canvasManager.current) {
       return;
     }
 
@@ -20,33 +20,32 @@ const CanvasLayout = () => {
     if (!ctx) {
       return;
     }
-    
-    canvasManager.current = new CanvasManager(canvas, ctx)
+
+    canvasManager.current = new CanvasManager(canvas, ctx);
     canvasManager.current.addEventListeners();
     return () => {
-      canvasManager.current?.destroyEventListeners()
+      canvasManager.current?.destroyEventListeners();
       canvasManager.current = null;
     };
   }, []);
 
   useEffect(() => {
-    if(canvasRef.current){
-      canvasRef.current.width = width;
-      canvasRef.current.height = height
+    if (canvasManager.current) {
+      canvasManager.current.drawCanvas({isScrolling : false});
     }
-  },[width, height])
-
-
-  
+  }, [width, height]);
 
   return (
     <>
-      <Toolbar setTool = {canvasManager.current?.setTool} getTool = {canvasManager.current?.getTool}/>
+      <Toolbar
+        setTool={canvasManager.current?.setTool}
+        getTool={canvasManager.current?.getTool}
+      />
       <canvas
-      className="bg-background"
-      ref={canvasRef}
-      width={width}
-      height={height}
+        className="bg-background"
+        ref={canvasRef}
+        width={width}
+        height={height}
       ></canvas>
     </>
   );

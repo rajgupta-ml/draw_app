@@ -6,16 +6,22 @@ import type { IShapeRenders } from "../baseClass";
 import type { currentPositionType } from "@/manager/CanvasManager";
 
 export class Ellipse implements IShapeRenders<EclipseShape> {
-    render =(existingShape : EclipseShape, canvas : RoughCanvas) => {
-        canvas.ellipse(existingShape.x, existingShape.y, existingShape.w, existingShape.h, shapeConfig)
-    }
+  render = (existingShape: EclipseShape, canvas: RoughCanvas) => {
+    canvas.ellipse(
+      existingShape.x,
+      existingShape.y,
+      existingShape.w,
+      existingShape.h,
+      shapeConfig,
+    );
+  };
 
-    createShape = (currentPosition : currentPositionType ) : EclipseShape => {
-        const x =  Math.min(currentPosition.startX, currentPosition.endX);
-        const y =  Math.min(currentPosition.startY, currentPosition.endY);
-        const w =  Math.abs(currentPosition.startX - currentPosition.endX);
-        const h =  Math.abs(currentPosition.startY - currentPosition.endY);
+  createShape = (currentPosition: currentPositionType): EclipseShape => {
+    const x = Math.min(currentPosition.startX, currentPosition.endX);
+    const y = Math.min(currentPosition.startY, currentPosition.endY);
+    const w = Math.abs(currentPosition.startX - currentPosition.endX);
+    const h = Math.abs(currentPosition.startY - currentPosition.endY);
 
-        return {type: TOOLS_NAME.ECLIPSE, x, y, w, h};    
-    }
+    return { type: TOOLS_NAME.ECLIPSE, x, y, w, h };
+  };
 }
