@@ -27,4 +27,13 @@ export type LineShape = {
   config?: Record<string, string>;
 };
 
-export type Shape = RectShape | EclipseShape | LineShape;
+export type RightArrowShape = {
+  type: TOOLS_NAME.RIGHT_ARROW;
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+  config?: Record<string, string>;
+}
+
+export type Shape = RectShape | EclipseShape | LineShape | RightArrowShape;
