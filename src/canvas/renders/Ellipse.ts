@@ -1,11 +1,10 @@
-import type { EclipseShape } from "@/types/canvasTypes";
+import type { currentPositionType, EclipseShape } from "@/types/canvasTypes";
 import { shapeConfig } from "@/constants/canvasConstant";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import { TOOLS_NAME } from "@/types/toolsTypes";
-import type { IShapeRenders } from "../baseClass";
-import type { currentPositionType } from "@/manager/CanvasManager";
+import { IShapeRenders } from "../baseClass";
 
-export class Ellipse implements IShapeRenders<EclipseShape> {
+export class Ellipse extends IShapeRenders<EclipseShape> {
   render = (existingShape: EclipseShape, canvas: RoughCanvas) => {
     canvas.ellipse(
       existingShape.x,
@@ -24,4 +23,8 @@ export class Ellipse implements IShapeRenders<EclipseShape> {
 
     return { type: TOOLS_NAME.ECLIPSE, x, y, w, h };
   };
+
+  isPointInShape(shape: EclipseShape, px: number, py: number): boolean {
+    return true;
+  }
 }

@@ -1,11 +1,10 @@
-import type { currentPositionType } from "@/manager/CanvasManager";
-import type { IShapeRenders } from "../baseClass";
+import { IShapeRenders } from "../baseClass";
 import { TOOLS_NAME } from "@/types/toolsTypes";
 import type { RoughCanvas } from "roughjs/bin/canvas";
-import type { DiamondShape } from "@/types/canvasTypes";
+import type { currentPositionType, DiamondShape } from "@/types/canvasTypes";
 import { shapeConfig } from "@/constants/canvasConstant";
 
-export class Diamond implements IShapeRenders<DiamondShape> {
+export class Diamond extends IShapeRenders<DiamondShape> {
 
     createShape(currentPosition: currentPositionType): DiamondShape {
       const x = Math.min(currentPosition.startX, currentPosition.endX);
@@ -21,7 +20,7 @@ export class Diamond implements IShapeRenders<DiamondShape> {
     render(existingShape: DiamondShape, canvas: RoughCanvas) {
       const { x,y,w,h,config } = existingShape;
   
-// Calculate the four diamond points
+    // Calculate the four diamond points
     // Top point
     const p1x = x + w / 2;
     const p1y = y;
@@ -49,5 +48,30 @@ export class Diamond implements IShapeRenders<DiamondShape> {
 
     // Draw the diamond path using rough.js
     canvas.path(diamondPathData, shapeConfig);
+    }
+
+    isPointInShape(shape: DiamondShape, px: number, py: number): boolean {
+      const p1x = shape.x + shape.w / 2;
+      const p1y = shape.y;
+  
+      // Right point
+      const p2x = shape.x + shape.w;
+      const p2y = shape.y + shape.h / 2;
+  
+      // Bottom point
+      const p3x = shape.x + shape.w / 2;
+      const p3y = shape.y + shape.h;
+  
+      // Left point
+      const p4x = shape.x;
+      const p4y = shape.y + shape.h / 2;
+
+      const segment1 = this.isPointInLine(p1x, p2x, p1y, p2y, px,py);
+      const segment2 = this.isPointInLine(p2x, p3x, p2y, p3y,px,py)
+      const segment3 = this.isPointInLine(p3x, p4x, p3y, p4y, px,py);
+      const segment4 = this.isPointInLine(p4x, p1x, p4y, p1y, px, py);
+  
+      return  segment1 || segment2 || segment3 || segment4
+  
     }
   }

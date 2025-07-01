@@ -1,11 +1,10 @@
 import type { RoughCanvas } from "roughjs/bin/canvas";
-import type { IShapeRenders } from "../baseClass";
-import type { currentPositionType } from "@/manager/CanvasManager";
-import type { RightArrowShape } from "@/types/canvasTypes";
+import { IShapeRenders } from "../baseClass";
+import type { currentPositionType, RightArrowShape } from "@/types/canvasTypes";
 import { TOOLS_NAME } from "@/types/toolsTypes";
 import { shapeConfig } from "@/constants/canvasConstant";
 
-export class RightArrow implements IShapeRenders<RightArrowShape> { 
+export class RightArrow extends IShapeRenders<RightArrowShape> { 
     createShape(currentPosition: currentPositionType): RightArrowShape {
         return {
           type: TOOLS_NAME.RIGHT_ARROW,
@@ -88,4 +87,8 @@ export class RightArrow implements IShapeRenders<RightArrowShape> {
         canvas.line(tipX, tipY, basePoint1X, basePoint1Y, shapeConfig);
         canvas.line(tipX, tipY, basePoint2X, basePoint2Y, shapeConfig);
       }
+
+    isPointInShape(shape: RightArrowShape, px: number, py: number): boolean {
+      return this.isPointInLine(shape.startX, shape.endX, shape.startY, shape.endY, px, py);
+    }
 }

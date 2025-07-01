@@ -1,11 +1,10 @@
-import type { LineShape } from "@/types/canvasTypes";
+import type { currentPositionType, LineShape } from "@/types/canvasTypes";
 import { shapeConfig } from "@/constants/canvasConstant";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import { TOOLS_NAME } from "@/types/toolsTypes";
-import type { IShapeRenders } from "../baseClass";
-import type { currentPositionType } from "@/manager/CanvasManager";
+import { IShapeRenders } from "../baseClass";
 
-export class Line implements IShapeRenders<LineShape> {
+export class Line extends IShapeRenders<LineShape> {
   render = (existingShape: LineShape, canvas: RoughCanvas) => {
     canvas.line(
       existingShape.x1,
@@ -24,4 +23,8 @@ export class Line implements IShapeRenders<LineShape> {
 
     return { type: TOOLS_NAME.LINE, x1, y1, x2, y2 };
   };
+
+  isPointInShape(shape: LineShape, px: number, py: number): boolean {
+    return this.isPointInLine(shape.x1, shape.x2, shape.y1, shape.y2, px,py)
+  }
 }

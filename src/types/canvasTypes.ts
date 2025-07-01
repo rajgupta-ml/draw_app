@@ -1,5 +1,12 @@
 import type { TOOLS_NAME } from "./toolsTypes";
 
+
+export type currentPositionType = {
+  startX : number,
+  startY : number,
+  endX : number,
+  endY : number,
+}
 export type RectShape = {
   type: TOOLS_NAME.RECT;
   x: number;

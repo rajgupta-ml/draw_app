@@ -1,5 +1,7 @@
-[] -> Build All the required tools
-[] -> Build Selection 
+[X] -> Build All the required tools
+[] -> Build Selection
+[] -> Build Zoom Logic
+[] -> Seperate Zoom Logic and Scroll Logic 
 [] -> Login And signup
 [] -> Collab 
 [] -> Dashboard
