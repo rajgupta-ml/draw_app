@@ -1,8 +1,8 @@
-import { ShapeList } from "@/canvas/renders/ShapeClassList";
 import type { Shape } from "@/types/canvasTypes";
 import { TOOLS_NAME } from "@/types/toolsTypes";
 import { RoughCanvas } from "roughjs/bin/canvas";
-
+import { DrawingBehaviorList } from "@/canvas/renders/ShapeClassList";
+import type { DrawingBehavior } from "@/canvas/drawingBehaviour/baseClass";
 export type currentPositionType = {
   startX: number;
   startY: number;
@@ -12,7 +12,8 @@ export type currentPositionType = {
 
 export class CanvasManager {
   private canvas: HTMLCanvasElement;
-  private availableDrawingShape = ShapeList;
+  private drawingBehaviorList : typeof DrawingBehaviorList = DrawingBehaviorList;
+  private drawingBehavior : DrawingBehavior<Shape> | null = null;
   private roughCanvas: RoughCanvas;
   private ctx: CanvasRenderingContext2D;
   private clicked: boolean = false;
@@ -21,17 +22,11 @@ export class CanvasManager {
   private shapes: Shape[] = [];
   private selectedTool: TOOLS_NAME;
   private dragged = false;
-  private currentPosition = {
-    startX: 0,
-    startY: 0,
-    endX: 0,
-    endY: 0,
-  };
-  private canvasSize = {width : 0 , height : 0};
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
+   constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
     this.canvas = canvas;
     this.roughCanvas = new RoughCanvas(this.canvas);
-    ((this.selectedTool = TOOLS_NAME.RECT), (this.ctx = ctx));
+    this.selectedTool = TOOLS_NAME.RECT, 
+    this.ctx = ctx
   }
   // Add And Remove Event Listner
   addEventListeners = () => {
@@ -48,13 +43,7 @@ export class CanvasManager {
     this.canvas.removeEventListener("mousemove", this.handleMouseMove);
     this.canvas.removeEventListener("wheel", this.handleScroll);
   };
-  // Event Listner Function
-
-  getCanvasSize = () => {
-    return this.canvasSize;
-  }
-
-
+  
   private handleScroll = (e: WheelEvent) => {
     e.preventDefault();
     ((this.scrollPositionX += e.deltaX),
@@ -65,28 +54,30 @@ export class CanvasManager {
   private handleMouseDown = (e: MouseEvent) => {
     this.clicked = true;
     const { x, y } = this.getCoordinateAdjustedByScroll(e.clientX, e.clientY);
-    this.updateCurrentPosition(x, y);
+    this.drawingBehavior = this.drawingBehaviorList.get(this.selectedTool) || null;
+    this.drawingBehavior?.onMouseDown(x,y);
   };
   private handleMouseMove = (e: MouseEvent) => {
-    if (this.clicked) {
+    if (this.clicked && this.drawingBehavior) {
       const { x, y } = this.getCoordinateAdjustedByScroll(e.clientX, e.clientY);
-      this.updateCurrentPosition(undefined, undefined, x, y);
-      this.drawCanvas({ isScrolling: false });
+      this.drawingBehavior?.onMouseMove(x,y);
+      this.drawCanvas({isScrolling : false});
       this.dragged = true;
     }
   };
   private handleMouseUp = (e: MouseEvent) => {
     this.clicked = false;
-    if (this.dragged) {
-      this.drawCanvas({ isScrolling: false });
-      const newShape = this.availableDrawingShape
-        .get(this.selectedTool)
-        ?.createShape(this.currentPosition);
+    
+    if (this.dragged && this.drawingBehavior) {
+      const newShape = this.drawingBehavior.onMouseUp();
       if (newShape) {
         this.shapes.push(newShape);
       }
-      this.dragged = false;
+      this.drawCanvas({ isScrolling: false });
     }
+
+    this.dragged = false;
+    this.drawingBehavior = null;
   };
 
   private getCoordinateAdjustedByScroll = (
@@ -100,35 +91,25 @@ export class CanvasManager {
     return { x, y };
   };
 
-  private updateCurrentPosition(
-    startX?: number,
-    startY?: number,
-    endX?: number,
-    endY?: number,
-  ) {
-    this.currentPosition = {
-      startX: startX ?? this.currentPosition.startX,
-      startY: startY ?? this.currentPosition.startY,
-      endX: endX ?? this.currentPosition.endX,
-      endY: endY ?? this.currentPosition.endY,
-    };
-  }
 
   drawCanvas = ({ isScrolling }: { isScrolling: boolean }) => {
-    const currentToolStrategy = this.availableDrawingShape.get(
-      this.selectedTool,
-    );
+    const currentToolStrategy = this.drawingBehavior
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.save();
     this.ctx.translate(-this.scrollPositionX, -this.scrollPositionY);
+
+    // Rendering the Shapes from history
     this.shapes.map((shape) => {
-      this.availableDrawingShape
-        .get(shape.type)
-        ?.render(shape, this.roughCanvas);
+      const shapeRenders = this.drawingBehaviorList.get(shape.type)?.getShapeRenders();
+      if(shapeRenders){
+        shapeRenders.render(shape, this.roughCanvas)
+      }
+        
     });
+
+    // Drawing the shape preview
     if (!isScrolling && this.dragged && currentToolStrategy) {
-      const shape = currentToolStrategy.createShape(this.currentPosition);
-      currentToolStrategy.render(shape, this.roughCanvas);
+      this.drawingBehavior?.renderPreview(this.roughCanvas);
     }
     this.ctx.restore();
   };

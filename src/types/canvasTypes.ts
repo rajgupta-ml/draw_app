@@ -46,4 +46,12 @@ export type DiamondShape = {
 
 }
 
-export type Shape = RectShape | EclipseShape | LineShape | RightArrowShape | DiamondShape;
+export type PenArrayShape = [number,number]
+
+
+
+export type PenShape = {
+  type : TOOLS_NAME.PEN,
+  lineArray : PenArrayShape[]
+} 
+export type Shape = RectShape | EclipseShape | LineShape | RightArrowShape | DiamondShape | PenShape;
