@@ -22,9 +22,8 @@ export class Pen extends IShapeRenders<PenShape> {
     for (let i = 0; i < penShape.lineArray.length - 1; i++) {
         const p1 = penShape.lineArray[i];
         const p2 = penShape.lineArray[i + 1];
-        console.log({p1,p2,px,py});
         if(p1 && p2){
-            return this.isPointInLine(p1[0], p2[0], p1[1], p2[1], px, py, 100);
+            return this.isPointInLine(p1[0], p2[0], p1[1], p2[1], px, py, 10);
         }
     }
     return false;

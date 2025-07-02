@@ -15,6 +15,7 @@ export class PenBehavior extends DrawingBehavior<PenShape> {
     };
 
     onMouseMove(x: number, y: number): void {
+        {console.log({x,y})}
         this.currentPath.push([x,y])
 
     }
