@@ -6,9 +6,10 @@ import { TOOLS_NAME } from "@/types/toolsTypes";
 import { RightArrow } from "./Right_Arrow";
 import { Diamond } from "./Diamond";
 import { Pen } from "./Pen";
-import { GeometricBehaviour } from "../drawingBehaviour/geometricBehaviour";
-import { PenBehavior } from "../drawingBehaviour/penBehaviour";
+import { GeometricBehaviour } from "../InteractionBehaviour/geometricBehaviour";
+import { PenBehavior } from "../InteractionBehaviour/penBehaviour";
 import type { IInteractionBehavior } from "../InteractionBehaviour/baseclass";
+import { SelectionBehavior } from "../InteractionBehaviour/selectionBehaviour";
 
 
 export const InteractionBehaviourList = new Map<TOOLS_NAME, IInteractionBehavior>([
@@ -18,4 +19,5 @@ export const InteractionBehaviourList = new Map<TOOLS_NAME, IInteractionBehavior
   [TOOLS_NAME.RIGHT_ARROW, new GeometricBehaviour<RightArrowShape>(new RightArrow())],
   [TOOLS_NAME.DIAMOND,  new GeometricBehaviour<DiamondShape>(new Diamond())],
   [TOOLS_NAME.PEN, new PenBehavior(new Pen())],
+  [TOOLS_NAME.MOUSE, new SelectionBehavior()]
 ]);

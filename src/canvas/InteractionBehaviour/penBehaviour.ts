@@ -51,5 +51,8 @@ export class PenBehavior implements IInteractionBehavior{
           );      
       }
   }
+  getShapeRenderer() : IShapeRenders<PenShape>{
+    return this.shapeRenders;
+}
 }
 

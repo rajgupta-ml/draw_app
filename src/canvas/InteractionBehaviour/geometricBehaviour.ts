@@ -41,12 +41,13 @@ export class GeometricBehaviour<T extends GeometricShape> implements IInteractio
             this.shapeRenders.render(shape, roughCanvas)
         }
     }
-
-
     previewShape({roughCanvas} : Pick<BehaviorContext, "roughCanvas">) : void {
         if(this.shapeRenders && this.dragged){
             const shape = this.shapeRenders.createShape(this.currentPosition);
             this.shapeRenders.render(shape, roughCanvas)
         }
+    }
+    getShapeRenderer() : IShapeRenders<T>{
+        return this.shapeRenders;
     }
 }

@@ -3,6 +3,7 @@ import { TOOLS_NAME } from "@/types/toolsTypes";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { InteractionBehaviourList } from "@/canvas/shapes/ShapeClassList";
 import type { BehaviorContext, IInteractionBehavior } from "@/canvas/InteractionBehaviour/baseclass";
+import type { IShapeRenders } from "@/canvas/shapes/baseClass";
 
 export class CanvasManager {
   private canvas: HTMLCanvasElement;
@@ -117,6 +118,11 @@ export class CanvasManager {
     return { x, y };
   };
 
+  private getRendererForShape(shape: Shape): IShapeRenders<Shape> | null {
+    const behavior = this.interactionBehaviours.get(shape.type);
+    return behavior?.getShapeRenderer ? behavior.getShapeRenderer() : null;
+}
+
   private createBehaviorContext(e: MouseEvent): BehaviorContext {
     const {x, y} = this.getCoordinateAdjustedByScroll(e.clientX, e.clientY);
     return {
@@ -127,6 +133,10 @@ export class CanvasManager {
       roughCanvas: this.roughCanvas,
       addShape: (shape) => this.shapes.push(shape),
       requestRedraw: (isScrolling = false) => this.drawCanvas({isScrolling}),
+      isPointInShape : (shape : Shape, px : number, py : number) => {
+          const renderer = this.getRendererForShape(shape);
+          return renderer ? renderer.isPointInShape(shape, px, py) : false;
+      }
     };
   }
 
