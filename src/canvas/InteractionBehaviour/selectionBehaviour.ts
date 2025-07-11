@@ -256,6 +256,8 @@ export class SelectionBehavior implements IInteractionBehavior {
     const allX = this.selectedShapes.flatMap((s) => {
       switch (s.type) {
         case TOOLS_NAME.RECT:
+          const r = s as DiamondShape;
+          return [r.x, r.x + r.w];
         case TOOLS_NAME.ECLIPSE:
           const ellipse = s as EclipseShape;
           return [ellipse.x - ellipse.w / 2, ellipse.x + ellipse.w / 2];
@@ -275,12 +277,14 @@ export class SelectionBehavior implements IInteractionBehavior {
     const allY = this.selectedShapes.flatMap((s) => {
       switch (s.type) {
         case TOOLS_NAME.RECT:
+          const r = s as DiamondShape;
+          return [r.y, r.y + r.h];
         case TOOLS_NAME.ECLIPSE:
           const ellipse = s as EclipseShape;
           return [ellipse.y - ellipse.h / 2, ellipse.y + ellipse.h / 2];
         case TOOLS_NAME.DIAMOND:
-          const r = s as RectShape;
-          return [r.y, r.y + r.h];
+          const d = s as DiamondShape;
+          return [d.y, d.y + d.h];
         case TOOLS_NAME.LINE:
           const l = s as LineShape;
           return [l.y1, l.y2];
