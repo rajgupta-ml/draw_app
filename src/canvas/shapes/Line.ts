@@ -25,6 +25,6 @@ export class Line extends IShapeRenders<LineShape> {
   };
 
   isPointInShape(shape: LineShape, px: number, py: number): boolean {
-    return this.isPointInLine(shape.x1, shape.x2, shape.y1, shape.y2, px,py)
+    return this.isPointInLine(shape.x1, shape.x2, shape.y1, shape.y2, px, py);
   }
 }

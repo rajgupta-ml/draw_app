@@ -16,8 +16,9 @@ export class Ellipse extends IShapeRenders<EclipseShape> {
   };
 
   createShape = (currentPosition: currentPositionType): EclipseShape => {
-    const x = Math.min(currentPosition.startX, currentPosition.endX);
-    const y = Math.min(currentPosition.startY, currentPosition.endY);
+    const x = (currentPosition.startX + currentPosition.endX) / 2;
+    const y = (currentPosition.startY + currentPosition.endY) / 2;
+    // Calculate the total width and height based on the drag distance
     const w = Math.abs(currentPosition.startX - currentPosition.endX);
     const h = Math.abs(currentPosition.startY - currentPosition.endY);
 
@@ -25,6 +26,16 @@ export class Ellipse extends IShapeRenders<EclipseShape> {
   };
 
   isPointInShape(shape: EclipseShape, px: number, py: number): boolean {
-    return true;
+    const cx = shape.x; // Center x
+    const cy = shape.y; // Center y
+    const a = shape.w / 2; // Semi-major axis
+    const b = shape.h / 2; // Semi-minor axis
+    if (a === 0 || b === 0) {
+      return false;
+    }
+    const value =
+      Math.pow(px - cx, 2) / Math.pow(a, 2) +
+      Math.pow(py - cy, 2) / Math.pow(b, 2);
+    return value <= 1;
   }
 }

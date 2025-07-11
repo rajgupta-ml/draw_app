@@ -31,7 +31,7 @@ const CanvasLayout = () => {
 
   useEffect(() => {
     if (canvasManager.current) {
-      canvasManager.current.drawCanvas({isScrolling : false});
+      canvasManager.current.drawCanvas({ isScrolling: false });
     }
   }, [width, height]);
 

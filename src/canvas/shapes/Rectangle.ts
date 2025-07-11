@@ -25,19 +25,47 @@ export class Rectangle extends IShapeRenders<RectShape> {
     const topLeftX = shape.x;
     const topLeftY = shape.y;
     const topRightX = shape.x + shape.w;
-    const topRightY = shape.y;  
+    const topRightY = shape.y;
     const bottomLeftX = shape.x;
     const bottomLeftY = shape.y + shape.h; // CORRECTED: Add height for bottom Y
     const bottomRightX = shape.x + shape.w;
-    const bottomRightY = shape.y + shape.h; // CORRECTED: Add height for bottom Y    
+    const bottomRightY = shape.y + shape.h; // CORRECTED: Add height for bottom Y
 
-    const topLineSegment = this.isPointInLine(topLeftX, topRightX, topLeftY, topRightY, px,py);
-    const bottomLineSegment = this.isPointInLine(bottomLeftX, bottomRightX, bottomLeftY, bottomRightY,px,py)
-    const leftLineSegment = this.isPointInLine(topLeftX, bottomLeftX, topLeftY, bottomLeftY, px,py);
-    const rightLineSegment = this.isPointInLine(topRightX, bottomRightX, topRightY, bottomRightY, px, py);
+    const topLineSegment = this.isPointInLine(
+      topLeftX,
+      topRightX,
+      topLeftY,
+      topRightY,
+      px,
+      py,
+    );
+    const bottomLineSegment = this.isPointInLine(
+      bottomLeftX,
+      bottomRightX,
+      bottomLeftY,
+      bottomRightY,
+      px,
+      py,
+    );
+    const leftLineSegment = this.isPointInLine(
+      topLeftX,
+      bottomLeftX,
+      topLeftY,
+      bottomLeftY,
+      px,
+      py,
+    );
+    const rightLineSegment = this.isPointInLine(
+      topRightX,
+      bottomRightX,
+      topRightY,
+      bottomRightY,
+      px,
+      py,
+    );
 
-  
-    return (topLineSegment || bottomLineSegment || leftLineSegment || rightLineSegment)
-      
+    return (
+      topLineSegment || bottomLineSegment || leftLineSegment || rightLineSegment
+    );
   }
 }
