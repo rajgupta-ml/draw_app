@@ -1,5 +1,5 @@
 import type { RoughCanvas } from "roughjs/bin/canvas";
-import { IShapeRenders } from "../baseClass";
+import { IShapeRenders } from "./baseClass";
 import type { currentPositionType, RightArrowShape } from "@/types/canvasTypes";
 import { TOOLS_NAME } from "@/types/toolsTypes";
 import { shapeConfig } from "@/constants/canvasConstant";

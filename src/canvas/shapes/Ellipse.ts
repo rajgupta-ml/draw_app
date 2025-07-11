@@ -2,7 +2,7 @@ import type { currentPositionType, EclipseShape } from "@/types/canvasTypes";
 import { shapeConfig } from "@/constants/canvasConstant";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import { TOOLS_NAME } from "@/types/toolsTypes";
-import { IShapeRenders } from "../baseClass";
+import { IShapeRenders } from "./baseClass";
 
 export class Ellipse extends IShapeRenders<EclipseShape> {
   render = (existingShape: EclipseShape, canvas: RoughCanvas) => {

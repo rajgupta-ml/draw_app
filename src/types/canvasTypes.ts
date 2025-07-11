@@ -1,5 +1,10 @@
 import type { TOOLS_NAME } from "./toolsTypes";
 
+interface IBase  {
+  id? : string,
+  type : TOOLS_NAME,
+  config?: Record<string, string>;
+}
 
 export type currentPositionType = {
   startX : number,
@@ -7,50 +12,39 @@ export type currentPositionType = {
   endX : number,
   endY : number,
 }
-export type RectShape = {
-  type: TOOLS_NAME.RECT;
+export interface RectShape  extends IBase {
   x: number;
   y: number;
   w: number;
   h: number;
-  config?: Record<string, string>;
 };
 
-export type EclipseShape = {
-  type: TOOLS_NAME.ECLIPSE;
+export interface EclipseShape extends IBase  {
   x: number;
   y: number;
   w: number;
   h: number;
-  config?: Record<string, string>;
 };
 
-export type LineShape = {
-  type: TOOLS_NAME.LINE;
+export interface LineShape extends IBase {
   x1: number;
   y1: number;
   x2: number;
   y2: number;
-  config?: Record<string, string>;
 };
 
-export type RightArrowShape = {
-  type: TOOLS_NAME.RIGHT_ARROW;
+export interface RightArrowShape extends IBase{
   startX: number;
   startY: number;
   endX: number;
   endY: number;
-  config?: Record<string, string>;
 }
 
-export type DiamondShape = {
-  type: TOOLS_NAME.DIAMOND,
+export interface DiamondShape extends IBase {
   x: number,
   y: number,
   w: number,
   h: number,
-  config?: Record<string, string>;
-
 }
 
 export type PenArrayShape = [number,number]

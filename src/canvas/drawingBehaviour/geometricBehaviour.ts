@@ -1,46 +1,52 @@
 import type { DiamondShape, EclipseShape, LineShape, RectShape, RightArrowShape, Shape } from "@/types/canvasTypes";
-import type { IShapeRenders } from "../baseClass";
-import { DrawingBehavior } from "./baseClass";
-import type { RoughCanvas } from "roughjs/bin/canvas";
-
+import type { IShapeRenders } from "../shapes/baseClass";
+import type { BehaviorContext, IInteractionBehavior } from "../InteractionBehaviour/baseclass";
 type GeometricShape = RectShape | EclipseShape | LineShape | RightArrowShape | DiamondShape
 
-export class GeometricBehaviour<T extends GeometricShape> extends DrawingBehavior<T> {
-
+export class GeometricBehaviour<T extends GeometricShape> implements IInteractionBehavior{
     private currentPosition = {startX : 0, startY : 0, endX : 0, endY : 0}
-    // private shapeRenders : IShapeRenders<Shape>
-    constructor(shapeRenders : IShapeRenders<T>){
-        super();
-        this.shapeRenders =shapeRenders
-    }
-    onMouseDown(x: number, y: number) : void{
+    private clicked = false;
+    private dragged = false;
+    constructor(private shapeRenders : IShapeRenders<T>){}
+    onMouseDown({x,y}: BehaviorContext): void {
+        this.clicked = true;
         this.currentPosition.startX = x;
         this.currentPosition.startY = y
-    };
 
-    onMouseUp() : T | null{
-        if(this.shapeRenders){
-            return this.shapeRenders.createShape(this.currentPosition)
-        }
-        return null;
-    }
-
-    onMouseMove(x: number, y: number): void {
         this.currentPosition.endX = x;
-        this.currentPosition.endY = y;
+        this.currentPosition.endY = y
+    }
+    onMouseMove({x,y,requestRedraw}: BehaviorContext): void {
+       if(this.clicked && this.shapeRenders) {
+            this.currentPosition.endX = x
+            this.currentPosition.endY = y
+            requestRedraw();
+            this.dragged =true
+       }
+    }
+    onMouseUp({ requestRedraw, addShape}: BehaviorContext): void {
+        this.clicked = false;
+        if(this.dragged && this.shapeRenders){
+           
+            const newShape = this.shapeRenders.createShape(this.currentPosition);
+            if(newShape){
+                addShape({...newShape, id : crypto.randomUUID()});
+            }
+            requestRedraw();
+        }
+        this.dragged = false; 
+    }
+    renderShapes({roughCanvas} : Pick<BehaviorContext, "roughCanvas">, shape : T): void {
+        if(this.shapeRenders){
+            this.shapeRenders.render(shape, roughCanvas)
+        }
     }
 
-    renderPreview(canvas: RoughCanvas): void {
-        if(this.shapeRenders){
+
+    previewShape({roughCanvas} : Pick<BehaviorContext, "roughCanvas">) : void {
+        if(this.shapeRenders && this.dragged){
             const shape = this.shapeRenders.createShape(this.currentPosition);
-            this.shapeRenders.render(shape, canvas);
+            this.shapeRenders.render(shape, roughCanvas)
         }
-    }
-
-    getShapeRender () : IShapeRenders<T>  | null{
-        if(this.shapeRenders){
-            return this.shapeRenders;
-        }
-        return null
     }
 }

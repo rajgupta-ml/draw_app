@@ -1,4 +1,4 @@
-import { IShapeRenders } from "../baseClass";
+import { IShapeRenders } from "./baseClass";
 import { TOOLS_NAME } from "@/types/toolsTypes";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import type { currentPositionType, DiamondShape } from "@/types/canvasTypes";

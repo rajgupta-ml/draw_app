@@ -1,41 +1,55 @@
-import type { PenArrayShape, PenShape, Shape } from "@/types/canvasTypes";
-import type { IShapeRenders } from "../baseClass";
-import { DrawingBehavior } from "./baseClass";
-import type { RoughCanvas } from "roughjs/bin/canvas";
+import type { PenArrayShape, PenShape} from "@/types/canvasTypes";
+import type { IShapeRenders } from "../shapes/baseClass";
 import { TOOLS_NAME } from "@/types/toolsTypes";
+import type { BehaviorContext, IInteractionBehavior } from "../InteractionBehaviour/baseclass";
 
-export class PenBehavior extends DrawingBehavior<PenShape> {
-    private currentPath : PenArrayShape[] = [] 
-    constructor(shapeRenders : IShapeRenders<PenShape>){
-        super();
-        this.shapeRenders = shapeRenders
-    }
-    onMouseDown(x: number, y: number) : void{
-       this.currentPath = [[x,y]];
-    };
 
-    onMouseMove(x: number, y: number): void {
-        {console.log({x,y})}
+export class PenBehavior implements IInteractionBehavior{
+  private currentPath : PenArrayShape[] = [] 
+  private clicked = false;
+  private dragged = false;
+  constructor(private shapeRenders : IShapeRenders<PenShape>){}
+  onMouseDown({x,y}: BehaviorContext): void {
+      this.clicked = true;
+      this.currentPath = [[x,y]];
+
+  }
+  onMouseMove({x,y,requestRedraw}: BehaviorContext): void {
+     if(this.clicked && this.shapeRenders) {
         this.currentPath.push([x,y])
-
-    }
-    onMouseUp(): PenShape | null {
-        if (this.currentPath.length > 1) {
-          const shape : PenShape = { type: TOOLS_NAME.PEN, lineArray: [...this.currentPath] };
-          this.currentPath = [];
-          return shape;
+        requestRedraw();
+        this.dragged =true
+     }
+  }
+  onMouseUp({ requestRedraw, addShape}: BehaviorContext): void {
+      this.clicked = false;
+      if(this.dragged && this.shapeRenders && this.currentPath.length > 1){
+        const newShape : PenShape = { type: TOOLS_NAME.PEN, lineArray: [...this.currentPath] };
+        if(newShape){
+          addShape({...newShape, id : crypto.randomUUID()});
         }
-        return null;
+        requestRedraw();
+        this.currentPath = [];
       }
+      this.dragged = false; 
+  }
+  renderShapes({roughCanvas} : Pick<BehaviorContext, "roughCanvas"> , shape : PenShape): void {
+      if(this.shapeRenders){
+        this.shapeRenders.render(
+          { type: TOOLS_NAME.PEN, lineArray: shape.lineArray },
+            roughCanvas
+          );      
+        }
+  }
 
 
-    renderPreview(canvas: RoughCanvas): void {
-        if (this.currentPath.length > 1 && this.shapeRenders) {
-            this.shapeRenders.render(
-              { type: TOOLS_NAME.PEN, lineArray: this.currentPath },
-              canvas
-            );
-          }
-    }
-
+  previewShape({roughCanvas} : Pick<BehaviorContext, "roughCanvas">) : void {
+      if(this.shapeRenders && this.dragged && this.currentPath.length > 1){
+        this.shapeRenders.render(
+          { type: TOOLS_NAME.PEN, lineArray: this.currentPath },
+            roughCanvas
+          );      
+      }
+  }
 }
+
