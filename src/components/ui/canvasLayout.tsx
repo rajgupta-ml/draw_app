@@ -1,52 +1,68 @@
+// components/CanvasLayout.tsx
 "use client";
-import { useWindowDimesion } from "@/hooks/useWindowDimension";
-import { CanvasManager } from "@/manager/CanvasManager";
+import { useWindowDimension } from "@/hooks/useWindowDimension";
+import { useCanvasManager } from "@/hooks/useCanvasManager";
 import React, { useEffect, useRef } from "react";
 import Toolbar from "./Toolbar";
+import ZoomLayout from "./ZoomLayout";
 
 const CanvasLayout = () => {
-  const { width, height } = useWindowDimesion();
-  const canvasManager = useRef<CanvasManager>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const { width = 800, height = 600 } = useWindowDimension(); // Default dimensions
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { isLoading, canvasManager, error } = useCanvasManager(canvasRef);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-
-    if (!canvas || canvasManager.current) {
-      return;
+    if (canvasManager && canvasRef.current) {
+      console.log("Drawing canvas with dimensions:", width, height);
+      canvasManager.setMaxScroll();
+      canvasManager.drawCanvas({ isScrolling: false });
     }
+  }, [width, height, canvasManager]);
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      return;
-    }
-
-    canvasManager.current = new CanvasManager(canvas, ctx);
-    canvasManager.current.addEventListeners();
-    return () => {
-      canvasManager.current?.destroyEventListeners();
-      canvasManager.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (canvasManager.current) {
-      canvasManager.current.drawCanvas({ isScrolling: false });
-    }
-  }, [width, height]);
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
 
   return (
     <>
-      <Toolbar
-        setTool={canvasManager.current?.setTool}
-        getTool={canvasManager.current?.getTool}
-      />
+      {isLoading && (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: "rgba(0, 0, 0, 0.5)",
+            color: "white",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10,
+          }}
+        >
+          Loading...
+        </div>
+      )}
       <canvas
         className="bg-background"
         ref={canvasRef}
         width={width}
         height={height}
       ></canvas>
+      {canvasManager && (
+        <>
+          <Toolbar
+            setTool={canvasManager.setTool}
+            getTool={canvasManager.getTool}
+          />
+          <ZoomLayout
+            getScale={canvasManager.getScale}
+            scaleUp={canvasManager.scaleUp}
+            scaleDown={canvasManager.scaleDown}
+          />
+        </>
+      )}
     </>
   );
 };

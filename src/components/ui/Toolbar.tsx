@@ -17,7 +17,7 @@ const Toolbar = ({ setTool, getTool }: IToolbar) => {
     }
   };
   return (
-    <div className="items-cente fixed top-5 right-0 left-0 flex h-12 justify-center p-0">
+    <div className="items-center fixed top-5 right-0 left-0 flex h-12 justify-center p-0">
       <div className="border-border bg-muted flex w-md items-center justify-between rounded-md p-1">
         {ToolComponent.map(({ name, Component }, index) => {
           return (

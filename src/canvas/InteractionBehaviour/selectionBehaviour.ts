@@ -244,8 +244,6 @@ export class SelectionBehavior implements IInteractionBehavior {
     /* No-op */
   }
 
-  // --- Private Helper Methods ---
-
   private updateSelectionBox(): void {
     if (this.selectedShapes.length === 0) {
       this.selectionBox = null;

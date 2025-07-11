@@ -4,24 +4,28 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import { InteractionBehaviourList } from "@/canvas/shapes/ShapeClassList";
 import type {
   BehaviorContext,
-  IInteractionBehavior,
 } from "@/canvas/InteractionBehaviour/baseclass";
 import type { IShapeRenders } from "@/canvas/shapes/baseClass";
 
 export class CanvasManager {
   private canvas: HTMLCanvasElement;
-  private interactionBehaviours: typeof InteractionBehaviourList =
-    InteractionBehaviourList;
+  private interactionBehaviours: typeof InteractionBehaviourList = InteractionBehaviourList;
   private roughCanvas: RoughCanvas;
   private ctx: CanvasRenderingContext2D;
   private scrollPositionX: number = 0;
   private scrollPositionY: number = 0;
   private shapes: Shape[] = [];
   private selectedTool: TOOLS_NAME;
+  private scale: number = 1; 
+  private maxScrollX: number = 0; 
+  private maxScrollY: number = 0;
+  private minScale: number = 0.1; 
+  private maxScale: number = 10; 
   constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
     this.canvas = canvas;
     this.roughCanvas = new RoughCanvas(this.canvas);
     ((this.selectedTool = TOOLS_NAME.RECT), (this.ctx = ctx));
+    
   }
   // Add And Remove Event Listner
   addEventListeners = () => {
@@ -40,8 +44,16 @@ export class CanvasManager {
 
   private handleScroll = (e: WheelEvent) => {
     e.preventDefault();
-    this.scrollPositionX += e.deltaX;
-    this.scrollPositionY += e.deltaY;
+
+    if(this.maxScrollX === 0 || this.maxScrollY === 0){
+      console.log("Scroll Not possible")
+      return 
+    }
+    const deltaX = e.deltaX / 2;
+    const deltaY = e.deltaY / 2;
+        
+    this.scrollPositionX = Math.max(-this.maxScrollX, Math.min(this.maxScrollX, this.scrollPositionX + deltaX));
+    this.scrollPositionY = Math.max(-this.maxScrollY, Math.min(this.maxScrollY, this.scrollPositionY + deltaY));
     this.drawCanvas({ isScrolling: true });
   };
 
@@ -54,25 +66,6 @@ export class CanvasManager {
     this.interactionBehaviours
       .get(this.selectedTool)!
       .onMouseMove(this.createBehaviorContext(e));
-    // const { x, y } = this.getCoordinateAdjustedByScroll(e.clientX, e.clientY);
-    // // Selection Logic which should seprated into anothor behviour
-    // if(this.selectedTool === TOOLS_NAME.MOUSE){
-    //   const shapeUnderMouse = this.shapes.find((shape) => {
-    //     const shapeRenders = this.drawingBehaviorList.get(shape.type)?.getShapeRenders();
-    //     if(shapeRenders){
-    //       return shapeRenders.isPointInShape(shape, x,y) ? shape : null;
-    //     }
-
-    //     return null;
-    //   })
-
-    //   this.selectedShape = shapeUnderMouse || null;
-    //   if (this.selectedShape) {
-    //     this.canvas.style.cursor = "crosshair";
-    //   } else {
-    //     this.canvas.style.cursor = "default";
-    //   }
-    // }
   };
   private handleMouseUp = (e: MouseEvent) => {
     this.interactionBehaviours
@@ -83,7 +76,10 @@ export class CanvasManager {
 
   // Draw and render on canvas method
   drawCanvas = ({ isScrolling }: { isScrolling: boolean }) => {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.resetTransform();
+    this.ctx.scale(this.scale, this.scale);
+
+    this.ctx.clearRect(0, 0, this.canvas.width / this.scale, this.canvas.height / this.scale);
     this.ctx.save();
     this.ctx.translate(-this.scrollPositionX, -this.scrollPositionY);
 
@@ -113,14 +109,40 @@ export class CanvasManager {
     return this.selectedTool;
   };
 
+  getScale = (): string => {
+    return `${(this.scale * 100).toFixed(0)}%` 
+  }
+
+  setMaxScroll = () => {
+    this.maxScrollX = this.canvas.width * (this.maxScale - 1); 
+    this.maxScrollY = this.canvas.height * (this.maxScale - 1);
+  }
+
+  scaleUp = () => {
+    const scaleFactor = 1.1; // 10% increase
+    this.scale = Math.min(this.maxScale, this.scale * scaleFactor);
+    this.ctx.scale(scaleFactor, scaleFactor);
+    this.drawCanvas({ isScrolling: false });
+    console.log("New scale:", this.scale);
+  } 
+
+  scaleDown = () => {
+    console.log("Scaling down");
+    const scaleFactor = 0.9; // 10% decrease
+    this.scale = Math.max(this.minScale, this.scale * scaleFactor);
+    this.ctx.scale(scaleFactor, scaleFactor);
+    this.drawCanvas({ isScrolling: false });
+    console.log("New scale:", this.scale);
+  }
+
   // Helper
   private getCoordinateAdjustedByScroll = (
     coorX: number,
     coorY: number,
   ): { x: number; y: number } => {
     const canvasRect = this.canvas.getBoundingClientRect();
-    const x = coorX - canvasRect.left + this.scrollPositionX;
-    const y = coorY - canvasRect.top + this.scrollPositionY;
+    const x = (coorX - canvasRect.left + this.scrollPositionX) / this.scale;
+    const y = (coorY - canvasRect.top + this.scrollPositionY) / this.scale;
 
     return { x, y };
   };

@@ -4,7 +4,7 @@ type WindowDimesion = {
   width: number;
   height: number;
 };
-export const useWindowDimesion = () => {
+export const useWindowDimension = () => {
   const [windowDimesion, setWindowDimesion] = useState<WindowDimesion>();
 
   useEffect(() => {
