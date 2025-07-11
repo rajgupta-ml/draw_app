@@ -25,6 +25,7 @@ export class CanvasManager {
     this.canvas = canvas;
     this.roughCanvas = new RoughCanvas(this.canvas);
     ((this.selectedTool = TOOLS_NAME.RECT), (this.ctx = ctx));
+    canvas.focus();
     
   }
   // Add And Remove Event Listner
@@ -33,6 +34,7 @@ export class CanvasManager {
     this.canvas.addEventListener("mouseup", this.handleMouseUp);
     this.canvas.addEventListener("mousemove", this.handleMouseMove);
     this.canvas.addEventListener("wheel", this.handleScroll);
+    this.canvas.addEventListener("keydown", this.handleKeyPress);
   };
 
   destroyEventListeners = () => {
@@ -40,8 +42,27 @@ export class CanvasManager {
     this.canvas.removeEventListener("mouseup", this.handleMouseUp);
     this.canvas.removeEventListener("mousemove", this.handleMouseMove);
     this.canvas.removeEventListener("wheel", this.handleScroll);
+    this.canvas.removeEventListener("keydown", this.handleKeyPress);
+
   };
 
+
+  private handleKeyPress = (e : KeyboardEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === "+" || e.key === "=") {
+        e.preventDefault();
+        this.scaleUp();
+      } else if (e.key === "-") {
+        e.preventDefault();
+        this.scaleDown();
+      } else if (e.key === "0") {
+        e.preventDefault();
+        this.scale = 1;
+        this.drawCanvas({ isScrolling: false });
+      }
+      window.dispatchEvent(new Event("scale-change"));
+    }
+  }
   private handleScroll = (e: WheelEvent) => {
     e.preventDefault();
 
@@ -49,8 +70,8 @@ export class CanvasManager {
       console.log("Scroll Not possible")
       return 
     }
-    const deltaX = e.deltaX / 2;
-    const deltaY = e.deltaY / 2;
+    const deltaX = e.deltaX / 4;
+    const deltaY = e.deltaY / 4;
         
     this.scrollPositionX = Math.max(-this.maxScrollX, Math.min(this.maxScrollX, this.scrollPositionX + deltaX));
     this.scrollPositionY = Math.max(-this.maxScrollY, Math.min(this.maxScrollY, this.scrollPositionY + deltaY));
@@ -76,12 +97,14 @@ export class CanvasManager {
 
   // Draw and render on canvas method
   drawCanvas = ({ isScrolling }: { isScrolling: boolean }) => {
+    this.ctx.save();
+
     this.ctx.resetTransform();
+    this.ctx.clearRect(0, 0, this.canvas.width , this.canvas.height );
+    
+    this.ctx.translate(-this.scrollPositionX, -this.scrollPositionY);
     this.ctx.scale(this.scale, this.scale);
 
-    this.ctx.clearRect(0, 0, this.canvas.width / this.scale, this.canvas.height / this.scale);
-    this.ctx.save();
-    this.ctx.translate(-this.scrollPositionX, -this.scrollPositionY);
 
     // Rendering the Shapes from history
     this.shapes.map((shape) => {
@@ -141,8 +164,8 @@ export class CanvasManager {
     coorY: number,
   ): { x: number; y: number } => {
     const canvasRect = this.canvas.getBoundingClientRect();
-    const x = (coorX - canvasRect.left + this.scrollPositionX) / this.scale;
-    const y = (coorY - canvasRect.top + this.scrollPositionY) / this.scale;
+    const x = (coorX - canvasRect.left + this.scrollPositionX) / this.scale  ;
+    const y = (coorY - canvasRect.top + this.scrollPositionY) / this.scale  ;
 
     return { x, y };
   };

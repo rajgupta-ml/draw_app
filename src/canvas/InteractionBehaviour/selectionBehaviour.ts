@@ -388,7 +388,7 @@ export class SelectionBehavior implements IInteractionBehavior {
       case "topLeft":
         newWidth = initialBox.width - dx;
         newHeight = initialBox.height - dy;
-        newX = initialBox.x + dx;
+        newX =initialBox.x + dx;
         newY = initialBox.y + dy;
         break;
       case "topRight":

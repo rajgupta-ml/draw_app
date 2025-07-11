@@ -5,6 +5,7 @@ import { useCanvasManager } from "@/hooks/useCanvasManager";
 import React, { useEffect, useRef } from "react";
 import Toolbar from "./Toolbar";
 import ZoomLayout from "./ZoomLayout";
+import { Loader } from "lucide-react";
 
 const CanvasLayout = () => {
   const { width = 800, height = 600 } = useWindowDimension(); // Default dimensions
@@ -26,26 +27,15 @@ const CanvasLayout = () => {
   return (
     <>
       {isLoading && (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            background: "rgba(0, 0, 0, 0.5)",
-            color: "white",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 10,
-          }}
-        >
-          Loading...
+        <div className="absolute inset-0 z-10 flex items-center justify-center">
+          <div className="animate-spin">
+            <Loader></Loader>
+          </div>
         </div>
       )}
       <canvas
-        className="bg-background"
+        className="bg-background outline-none"
+        tabIndex={0}
         ref={canvasRef}
         width={width}
         height={height}

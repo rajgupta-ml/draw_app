@@ -18,7 +18,7 @@ const Toolbar = ({ setTool, getTool }: IToolbar) => {
   };
   return (
     <div className="items-center fixed top-5 right-0 left-0 flex h-12 justify-center p-0">
-      <div className="border-border bg-muted flex w-md items-center justify-between rounded-md p-1">
+      <div className="border-border bg-muted flex w-xs items-center justify-between rounded-md p-1">
         {ToolComponent.map(({ name, Component }, index) => {
           return (
             <div
@@ -27,11 +27,11 @@ const Toolbar = ({ setTool, getTool }: IToolbar) => {
               className={cn(
                 "hover:bg-accent hover:text-accent-foreground text-muted-foreground flex cursor-pointer items-end gap-1 rounded-md p-2 transition-all duration-300",
                 getTool && getTool() == name
-                  ? "bg-accent text-accent-foreground"
+                  ? "bg-accent text-accent-foreground "
                   : "",
               )}
             >
-              <Component></Component>
+              <Component size={14}></Component>
             </div>
           );
         })}
