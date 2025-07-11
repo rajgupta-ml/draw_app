@@ -15,6 +15,7 @@ export class CanvasManager {
   private scrollPositionX: number = 0;
   private scrollPositionY: number = 0;
   private shapes: Shape[] = [];
+  private redoShape: Shape[] = [];
   private selectedTool: TOOLS_NAME;
   private scale: number = 1; 
   private maxScrollX: number = 0; 
@@ -131,6 +132,36 @@ export class CanvasManager {
   getTool = (): TOOLS_NAME => {
     return this.selectedTool;
   };
+
+  getShape = () : Shape[] => {
+    return this.shapes
+  }
+
+  getRedoShape = () : Shape[] => {
+    return this.shapes
+  }
+
+  undo = () => {
+    if(this.shapes.length  > 0){
+      const shape = this.shapes[this.shapes.length - 1] as Shape;
+      this.redoShape.push(shape);
+      this.shapes.pop();
+      this.drawCanvas({isScrolling : false});
+    }
+    console.log("Undo Not Possible")
+  }
+
+  redo = () => {
+    if(this.redoShape.length > 0){
+      const shape = this.redoShape[this.redoShape.length - 1] as Shape;
+      this.shapes.push(shape);
+      this.redoShape.pop();
+      this.drawCanvas({isScrolling : false});
+    } 
+    console.log("Redo Not Possible")
+
+  }
+
 
   getScale = (): string => {
     return `${(this.scale * 100).toFixed(0)}%` 

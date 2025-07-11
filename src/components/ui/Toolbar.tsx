@@ -4,17 +4,15 @@ import type { TOOLS_NAME } from "@/types/toolsTypes";
 import React, { useState } from "react";
 
 interface IToolbar {
-  setTool: ((tool: TOOLS_NAME) => void) | undefined;
-  getTool: (() => TOOLS_NAME) | undefined;
+  setTool: ((tool: TOOLS_NAME) => void) ;
+  getTool: (() => TOOLS_NAME);
 }
 const Toolbar = ({ setTool, getTool }: IToolbar) => {
   const [state, setState] = useState<TOOLS_NAME>();
   console.log(state);
   const handleClick = (name: TOOLS_NAME) => {
-    if (setTool && getTool) {
       setTool(name);
-      setState(name);
-    }
+      setState(name);    
   };
   return (
     <div className="items-center fixed top-5 right-0 left-0 flex h-12 justify-center p-0">

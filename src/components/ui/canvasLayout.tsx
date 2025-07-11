@@ -50,6 +50,10 @@ const CanvasLayout = () => {
             getScale={canvasManager.getScale}
             scaleUp={canvasManager.scaleUp}
             scaleDown={canvasManager.scaleDown}
+            undoQueue = {canvasManager.getShape}
+            redoQueue = {canvasManager.getRedoShape}
+            undo = {canvasManager.undo}
+            redo = {canvasManager.redo}
           />
         </>
       )}
