@@ -28,6 +28,6 @@ export interface IInteractionBehavior {
     context: Pick<BehaviorContext, "roughCanvas">,
     shape: Shape,
   ): void;
-  previewShape?(context: Pick<BehaviorContext, "roughCanvas">): void;
+  previewShape?(context: Pick<BehaviorContext, "roughCanvas" | "ctx">): void;
   getShapeRenderer?(): IShapeRenders<Shape>;
 }

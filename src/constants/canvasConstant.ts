@@ -1,7 +1,7 @@
 export const shapeConfig = {
-  roughness: 2,
+  roughness: "2",
   stroke: "white",
-  seed: 1,
+  seed: "1",
 };
 
 export const eraserShapeConfig = {

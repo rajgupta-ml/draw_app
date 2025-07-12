@@ -128,6 +128,7 @@ export class CanvasManager {
     targetCtx.translate(-this.scrollPositionX, -this.scrollPositionY);
 
 
+    console.log(this.shapes)
     // Rendering the Shapes from history
     this.shapes.map((shape) => {
       const behavior = this.interactionBehaviours.get(shape.type);
@@ -140,7 +141,7 @@ export class CanvasManager {
     if (!isScrolling) {
       const behavior = this.interactionBehaviours.get(this.selectedTool);
       if(behavior && behavior.previewShape){
-        behavior.previewShape({roughCanvas : targetRoughCanvas})
+        behavior.previewShape({roughCanvas : targetRoughCanvas, ctx : targetCtx})
       }
     }
 
@@ -155,7 +156,10 @@ export class CanvasManager {
   // Setter and Getter Methods
   setTool = (tool: TOOLS_NAME) => {
     this.selectedTool = tool;
-    if(this.selectedTool === TOOLS_NAME.HAND){
+    if(this.selectedTool === TOOLS_NAME.ERASER){
+      this.canvas.style.cursor = "none"
+    }
+    else if(this.selectedTool === TOOLS_NAME.HAND){
       this.canvas.style.cursor = "grab"
     }else{
       this.canvas.style.cursor = "crosshair"

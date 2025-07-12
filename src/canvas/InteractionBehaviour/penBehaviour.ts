@@ -5,6 +5,7 @@ import type {
   BehaviorContext,
   IInteractionBehavior,
 } from "../InteractionBehaviour/baseclass";
+import { shapeConfig } from "@/constants/canvasConstant";
 
 export class PenBehavior implements IInteractionBehavior {
   private currentPath: PenArrayShape[] = [];
@@ -30,7 +31,7 @@ export class PenBehavior implements IInteractionBehavior {
         lineArray: [...this.currentPath],
       };
       if (newShape) {
-        addShape({ ...newShape, id: crypto.randomUUID() });
+        addShape({ ...newShape, id: crypto.randomUUID(), config : shapeConfig });
       }
       requestRedraw();
       this.currentPath = [];
@@ -43,7 +44,7 @@ export class PenBehavior implements IInteractionBehavior {
   ): void {
     if (this.shapeRenders) {
       this.shapeRenders.render(
-        { type: TOOLS_NAME.PEN, lineArray: shape.lineArray },
+        { type: TOOLS_NAME.PEN, lineArray: shape.lineArray, config : shape.config  },
         roughCanvas,
       );
     }
@@ -52,7 +53,7 @@ export class PenBehavior implements IInteractionBehavior {
   previewShape({ roughCanvas }: Pick<BehaviorContext, "roughCanvas">): void {
     if (this.shapeRenders && this.dragged && this.currentPath.length > 1) {
       this.shapeRenders.render(
-        { type: TOOLS_NAME.PEN, lineArray: this.currentPath },
+        { type: TOOLS_NAME.PEN, lineArray: this.currentPath, config : shapeConfig },
         roughCanvas,
       );
     }

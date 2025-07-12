@@ -8,12 +8,13 @@ import { Diamond } from "../shapes/Diamond";
 import { RightArrow } from "../shapes/Right_Arrow";
 import { Line } from "../shapes/Line";
 import { Ellipse } from "../shapes/Ellipse";
-import { eraserShapeConfig } from "@/constants/canvasConstant";
+import { eraserShapeConfig, shapeConfig } from "@/constants/canvasConstant";
 
 export class EraserBehaviour implements IInteractionBehavior{
     private clicked : boolean = false
     private ShapeWhichNeedsToBeRemoved : {shape : Shape, index : number}[]= [];
-    
+    private currentMouseX = 0;
+    private currentMouseY = 0;
     private shapeBehaviours = new Map<TOOLS_NAME,IShapeRenders<Shape>>([
         [TOOLS_NAME.RECT, (new Rectangle())],
         [TOOLS_NAME.ECLIPSE, (new Ellipse())],
@@ -27,8 +28,9 @@ export class EraserBehaviour implements IInteractionBehavior{
         this.clicked = true;
     }
 
-    onMouseUp({shapes , addRedoShape, requestRedraw}: BehaviorContext): void {
+    onMouseUp({x,y,shapes , addRedoShape, requestRedraw}: BehaviorContext): void {
         let itemsRemoved = 0;
+      
         this.clicked = false
         const seenIds = new Set();
         const shapesToBeRemovedFiltered = this.ShapeWhichNeedsToBeRemoved.filter((value) => {
@@ -51,16 +53,43 @@ export class EraserBehaviour implements IInteractionBehavior{
 
     
     onMouseMove({x, y, shapes, requestRedraw}: BehaviorContext): void {
-        if(!this.clicked) return;
-        
+
+        this.currentMouseX = x;
+        this.currentMouseY = y;
+        if(!this.clicked) {
+            requestRedraw();
+            return
+        };
         shapes.forEach((shape, index) => {
             const newShape = {...shape, config : eraserShapeConfig}
             const shapeBehaviour = this.shapeBehaviours.get(shape.type);
             if(shapeBehaviour?.isPointInShape(shape, x,y)){
                 this.ShapeWhichNeedsToBeRemoved.push({shape , index});
                 shapes[index] = newShape
-                requestRedraw();
             }
         })
+
+        requestRedraw();
     }
+
+
+    previewShape(context: Pick<BehaviorContext, "roughCanvas">): void {
+        const { roughCanvas } = context;
+        // Draw your eraser cursor here
+        const eraserSize = 20; // Adjust as needed
+        const halfSize = eraserSize / 2;
+    
+        // You can draw a circle, a square, or even a more complex eraser icon
+        roughCanvas.draw(
+            roughCanvas.circle(this.currentMouseX, this.currentMouseY, halfSize, {
+                roughness: 0,
+                stroke: "white",
+                strokeWidth: 1,
+                fill: "rgba(255, 255, 255, 0.7)", // Semi-transparent white
+                fillStyle: "solid",
+            })
+        );
+
+    }
+    
 }
