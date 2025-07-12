@@ -12,6 +12,8 @@ export class CanvasManager {
   private interactionBehaviours: typeof InteractionBehaviourList = InteractionBehaviourList;
   private roughCanvas: RoughCanvas;
   private ctx: CanvasRenderingContext2D;
+  private offscreenCanvas: HTMLCanvasElement;
+  private offscreenCtx: CanvasRenderingContext2D;
   private scrollPositionX: number = 0;
   private scrollPositionY: number = 0;
   private shapes: Shape[] = [];
@@ -22,10 +24,17 @@ export class CanvasManager {
   private maxScrollY: number = 0;
   private minScale: number = 0.1; 
   private maxScale: number = 10; 
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
+  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, offScreenCanvas: HTMLCanvasElement, offScreenCanvasctx: CanvasRenderingContext2D) {
     this.canvas = canvas;
-    this.roughCanvas = new RoughCanvas(this.canvas);
-    ((this.selectedTool = TOOLS_NAME.RECT), (this.ctx = ctx));
+    this.ctx = ctx;
+    
+    
+    this.offscreenCanvas = offScreenCanvas  
+    this.offscreenCtx = offScreenCanvasctx;
+    
+    this.roughCanvas = new RoughCanvas(this.offscreenCanvas);
+    this.selectedTool = TOOLS_NAME.RECT
+    this.canvas.style.cursor = "crosshair"
     canvas.focus();
     
   }
@@ -66,14 +75,19 @@ export class CanvasManager {
   }
 
   private handleScroll = (e: WheelEvent) => {
+
+    if(this.selectedTool === TOOLS_NAME.HAND) {
+      e.preventDefault();
+      return;
+    };
     e.preventDefault();
 
     if(this.maxScrollX === 0 || this.maxScrollY === 0){
       console.log("Scroll Not possible")
       return 
     }
-    const deltaX = e.deltaX / 4;
-    const deltaY = e.deltaY / 4;
+    const deltaX = e.deltaX ;
+    const deltaY = e.deltaY ;
         
     this.scrollPositionX = Math.max(-this.maxScrollX, Math.min(this.maxScrollX, this.scrollPositionX + deltaX));
     this.scrollPositionY = Math.max(-this.maxScrollY, Math.min(this.maxScrollY, this.scrollPositionY + deltaY));
@@ -98,35 +112,45 @@ export class CanvasManager {
 
   // Draw and render on canvas method
   drawCanvas = ({ isScrolling }: { isScrolling: boolean }) => {
-    this.ctx.save();
+    const targetCtx = this.offscreenCtx;
+    const targetRoughCanvas = this.roughCanvas
+    targetCtx.save();
 
-    this.ctx.resetTransform();
-    this.ctx.clearRect(0, 0, this.canvas.width , this.canvas.height );
+    targetCtx.resetTransform();
+    targetCtx.clearRect(0, 0, this.canvas.width , this.canvas.height );
     
-    this.ctx.translate(-this.scrollPositionX, -this.scrollPositionY);
-    this.ctx.scale(this.scale, this.scale);
+    targetCtx.translate(-this.scrollPositionX, -this.scrollPositionY);
+    targetCtx.scale(this.scale, this.scale);
 
 
     // Rendering the Shapes from history
     this.shapes.map((shape) => {
       this.interactionBehaviours
         .get(shape.type)!
-        .renderShapes({ roughCanvas: this.roughCanvas }, shape);
+        .renderShapes({ roughCanvas: targetRoughCanvas }, shape);
     });
 
     // Drawing the shape preview
     if (!isScrolling) {
       this.interactionBehaviours
         .get(this.selectedTool)!
-        .previewShape({ roughCanvas: this.roughCanvas });
+        .previewShape({ roughCanvas: targetRoughCanvas });
     }
-    this.ctx.restore();
-  };
+    targetCtx.restore();
+
+
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); 
+    this.ctx.drawImage(this.offscreenCanvas, 0, 0);  
+    };
 
   // Setter and Getter Methods
   setTool = (tool: TOOLS_NAME) => {
     this.selectedTool = tool;
-    console.log(this.selectedTool);
+    if(this.selectedTool === TOOLS_NAME.HAND){
+      this.canvas.style.cursor = "grab"
+    }else{
+      this.canvas.style.cursor = "crosshair"
+    }
   };
 
   getTool = (): TOOLS_NAME => {

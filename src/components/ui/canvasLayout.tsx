@@ -10,7 +10,8 @@ import { Loader } from "lucide-react";
 const CanvasLayout = () => {
   const { width = 800, height = 600 } = useWindowDimension(); 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { isLoading, canvasManager, error } = useCanvasManager(canvasRef);
+  const offScreenCanvasRef = useRef<HTMLCanvasElement>(null);
+  const { isLoading, canvasManager, error } = useCanvasManager(canvasRef, offScreenCanvasRef);
 
   useEffect(() => {
     if (canvasManager && canvasRef.current) {
@@ -40,6 +41,13 @@ const CanvasLayout = () => {
         width={width}
         height={height}
       ></canvas>
+
+      <canvas 
+        ref={offScreenCanvasRef}
+        width={width}
+        height={height}
+      >
+      </canvas>
       {canvasManager && (
         <>
           <Toolbar

@@ -29,7 +29,7 @@ export class HandBehaviour implements IInteractionBehavior{
             setScrollPositionY(this.initialScrollY - dy);
 
 
-            requestRedraw();
+            requestRedraw(true);
         }
     }
 
