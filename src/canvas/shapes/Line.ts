@@ -6,12 +6,14 @@ import { IShapeRenders } from "./baseClass";
 
 export class Line extends IShapeRenders<LineShape> {
   render = (existingShape: LineShape, canvas: RoughCanvas) => {
+    const config = existingShape.config ?? shapeConfig
+
     canvas.line(
       existingShape.x1,
       existingShape.y1,
       existingShape.x2,
       existingShape.y2,
-      shapeConfig,
+      config,
     );
   };
 

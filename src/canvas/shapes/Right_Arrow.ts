@@ -17,7 +17,7 @@ export class RightArrow extends IShapeRenders<RightArrowShape> {
 
   render(existingShape: RightArrowShape, canvas: RoughCanvas): void {
     const { startX, startY, endX, endY, config } = existingShape;
-
+    const configValue = config ?? shapeConfig 
     // Calculate vector properties
     const dx = endX - startX;
     const dy = endY - startY;
@@ -48,7 +48,7 @@ export class RightArrow extends IShapeRenders<RightArrowShape> {
           scaledArrowheadLength,
           scaledArrowheadWidth,
           angle,
-          config,
+          configValue,
         );
       }
     } else {
@@ -62,7 +62,7 @@ export class RightArrow extends IShapeRenders<RightArrowShape> {
         arrowheadLength,
         arrowheadWidth,
         angle,
-        config,
+        configValue,
       );
     }
   }
@@ -107,7 +107,7 @@ export class RightArrow extends IShapeRenders<RightArrowShape> {
       (arrowheadWidth / 2) * Math.cos(angle);
 
     // Draw the main shaft line
-    canvas.line(startX, startY, shaftEndX, shaftEndY, shapeConfig);
+    canvas.line(startX, startY, shaftEndX, shaftEndY, options);
 
     // Add a second, slightly offset line for the shaft to create the "double line" effect
     const offsetAmount = 2; // Adjust this value for desired separation
@@ -118,12 +118,12 @@ export class RightArrow extends IShapeRenders<RightArrowShape> {
       startY + offsetY,
       shaftEndX + offsetX,
       shaftEndY + offsetY,
-      shapeConfig,
+      options,
     );
 
     // Draw the two lines for the arrowhead (creating an open, non-filled arrowhead)
-    canvas.line(tipX, tipY, basePoint1X, basePoint1Y, shapeConfig);
-    canvas.line(tipX, tipY, basePoint2X, basePoint2Y, shapeConfig);
+    canvas.line(tipX, tipY, basePoint1X, basePoint1Y, options);
+    canvas.line(tipX, tipY, basePoint2X, basePoint2Y, options);
   }
 
   isPointInShape(shape: RightArrowShape, px: number, py: number): boolean {

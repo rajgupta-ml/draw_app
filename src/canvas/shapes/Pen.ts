@@ -10,7 +10,8 @@ import { TOOLS_NAME } from "@/types/toolsTypes";
 
 export class Pen extends IShapeRenders<PenShape> {
   render(existingShape: PenShape, canvas: RoughCanvas): void {
-    canvas.linearPath(existingShape.lineArray, shapeConfig);
+    const config = existingShape.config ?? shapeConfig
+    canvas.linearPath(existingShape.lineArray, config);
   }
 
   createShape(currentPosition: currentPositionType): PenShape {

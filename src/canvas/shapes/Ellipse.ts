@@ -6,12 +6,13 @@ import { IShapeRenders } from "./baseClass";
 
 export class Ellipse extends IShapeRenders<EclipseShape> {
   render = (existingShape: EclipseShape, canvas: RoughCanvas) => {
+    const config = existingShape.config ?? shapeConfig
     canvas.ellipse(
       existingShape.x,
       existingShape.y,
       existingShape.w,
       existingShape.h,
-      shapeConfig,
+      config,
     );
   };
 

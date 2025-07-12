@@ -5,12 +5,14 @@ import { shapeConfig } from "@/constants/canvasConstant";
 import { TOOLS_NAME } from "@/types/toolsTypes";
 export class Rectangle extends IShapeRenders<RectShape> {
   render = (existingShape: RectShape, canvas: RoughCanvas) => {
+
+    const config = existingShape.config ?? shapeConfig
     canvas.rectangle(
       existingShape.x,
       existingShape.y,
       existingShape.w,
       existingShape.h,
-      shapeConfig,
+      config,
     );
   };
 

@@ -244,7 +244,7 @@ export class CanvasManager {
   }
 
   // Helper
-  private getCoordinateAdjustedByScroll = (
+  private getCoordinateAdjustedByScrollAndScale = (
     coorX: number,
     coorY: number,
   ): { x: number; y: number } => {
@@ -265,7 +265,7 @@ export class CanvasManager {
   }
 
   private createBehaviorContext(e: MouseEvent): BehaviorContext {
-    const { x, y } = this.getCoordinateAdjustedByScroll(e.clientX, e.clientY);
+    const { x, y } = this.getCoordinateAdjustedByScrollAndScale(e.clientX, e.clientY);
     return {
       x,
       y,
@@ -274,6 +274,7 @@ export class CanvasManager {
       ctx: this.ctx,
       roughCanvas: this.roughCanvas,
       addShape: (shape) => this.shapes.push(shape),
+      addRedoShape : (shape) => this.redoShape.push(shape),
       requestRedraw: (isScrolling = false) => this.drawCanvas({ isScrolling }),
       isPointInShape: (shape: Shape, px: number, py: number) => {
         const renderer = this.getRendererForShape(shape);

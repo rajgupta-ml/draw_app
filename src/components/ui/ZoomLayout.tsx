@@ -28,9 +28,6 @@ const ZoomLayout = ({scaleDown, scaleUp, getScale, undoQueue, redoQueue, undo, r
         setScale(getScale());
     }
 
-    const handleUndo = () => {
-
-    }
 
     useEffect(() => {
         window.addEventListener("scale-change", () => setScale(getScale()));

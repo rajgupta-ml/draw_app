@@ -22,6 +22,8 @@ export class Diamond extends IShapeRenders<DiamondShape> {
   render(existingShape: DiamondShape, canvas: RoughCanvas) {
     const { x, y, w, h, config } = existingShape;
 
+    const configValue = config ?? shapeConfig 
+
     // Calculate the four diamond points
     // Top point
     const p1x = x + w / 2;
@@ -48,7 +50,7 @@ export class Diamond extends IShapeRenders<DiamondShape> {
       `;
 
     // Draw the diamond path using rough.js
-    canvas.path(diamondPathData, shapeConfig);
+    canvas.path(diamondPathData, configValue);
   }
 
   isPointInShape(shape: DiamondShape, px: number, py: number): boolean {

@@ -49,7 +49,7 @@ export interface DiamondShape extends IBase {
 
 export type PenArrayShape = [number, number];
 
-export type PenShape = {
+export interface PenShape extends IBase {
   type: TOOLS_NAME.PEN;
   lineArray: PenArrayShape[];
 };

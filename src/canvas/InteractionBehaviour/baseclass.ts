@@ -10,6 +10,7 @@ export interface BehaviorContext {
   ctx: CanvasRenderingContext2D;
   roughCanvas: RoughCanvas;
   addShape: (shape: Shape) => void;
+  addRedoShape : (shape: Shape) => void;
   requestRedraw: (isScrolling?: boolean) => void;
   isPointInShape: (shape: Shape, px: number, py: number) => Boolean;
   getScrollPositionX: () => number

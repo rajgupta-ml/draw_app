@@ -34,6 +34,8 @@ const CanvasLayout = () => {
           </div>
         </div>
       )}
+      <div className="overflow-hidden overflow-y-hidden">
+
       <canvas
         className="bg-background outline-none"
         tabIndex={0}
@@ -46,6 +48,7 @@ const CanvasLayout = () => {
         ref={offScreenCanvasRef}
         width={width}
         height={height}
+        style={{ display: 'none' }} // <--- Add this line to hide the canvas
       >
       </canvas>
       {canvasManager && (
@@ -65,6 +68,7 @@ const CanvasLayout = () => {
           />
         </>
       )}
+      </div>
     </>
   );
 };
