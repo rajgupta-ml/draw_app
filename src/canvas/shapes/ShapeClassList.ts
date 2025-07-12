@@ -18,6 +18,8 @@ import { GeometricBehaviour } from "../InteractionBehaviour/geometricBehaviour";
 import { PenBehavior } from "../InteractionBehaviour/penBehaviour";
 import type { IInteractionBehavior } from "../InteractionBehaviour/baseclass";
 import { SelectionBehavior } from "../InteractionBehaviour/selectionBehaviour";
+import { ToolCase } from "lucide-react";
+import { HandBehaviour } from "../InteractionBehaviour/HandBehaviour";
 
 export const InteractionBehaviourList = new Map<
   TOOLS_NAME,
@@ -33,4 +35,5 @@ export const InteractionBehaviourList = new Map<
   [TOOLS_NAME.DIAMOND, new GeometricBehaviour<DiamondShape>(new Diamond())],
   [TOOLS_NAME.PEN, new PenBehavior(new Pen())],
   [TOOLS_NAME.MOUSE, new SelectionBehavior()],
+  [TOOLS_NAME.HAND,  new HandBehaviour()]
 ]);

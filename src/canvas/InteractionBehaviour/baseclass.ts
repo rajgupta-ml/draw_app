@@ -12,6 +12,11 @@ export interface BehaviorContext {
   addShape: (shape: Shape) => void;
   requestRedraw: (isScrolling?: boolean) => void;
   isPointInShape: (shape: Shape, px: number, py: number) => Boolean;
+  getScrollPositionX: () => number
+  getScrollPositionY: () => number
+  setScrollPositionX: (x : number) => void
+  setScrollPositionY: (y : number) => void
+
 }
 export interface IInteractionBehavior {
   onMouseDown(context: BehaviorContext): void;

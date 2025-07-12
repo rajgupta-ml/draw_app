@@ -16,4 +16,6 @@ export enum TOOLS_NAME {
   RIGHT_ARROW = "rightArrow",
   LINE = "line",
   PEN = "pen",
+  ERASER = "eraser",
+  TEXT = "text",
 }

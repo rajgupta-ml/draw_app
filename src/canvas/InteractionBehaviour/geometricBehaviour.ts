@@ -4,7 +4,6 @@ import type {
   LineShape,
   RectShape,
   RightArrowShape,
-  Shape,
 } from "@/types/canvasTypes";
 import type { IShapeRenders } from "../shapes/baseClass";
 import type {

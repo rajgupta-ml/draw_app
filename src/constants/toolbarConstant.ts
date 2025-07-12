@@ -8,6 +8,8 @@ import {
   MoveRight,
   LucideMoveHorizontal,
   Pen,
+  Eraser,
+  Type,
 } from "lucide-react";
 
 export const ToolComponent: ITools[] = [
@@ -51,4 +53,14 @@ export const ToolComponent: ITools[] = [
     Component: Pen,
     number: 8,
   },
+  {
+    name : TOOLS_NAME.ERASER,
+    Component : Eraser,
+    number : 9,
+  },
+  {
+    name : TOOLS_NAME.TEXT,
+    Component : Type,
+    number : 10,
+  }
 ];

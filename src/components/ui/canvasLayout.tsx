@@ -8,7 +8,7 @@ import ZoomLayout from "./ZoomLayout";
 import { Loader } from "lucide-react";
 
 const CanvasLayout = () => {
-  const { width = 800, height = 600 } = useWindowDimension(); // Default dimensions
+  const { width = 800, height = 600 } = useWindowDimension(); 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { isLoading, canvasManager, error } = useCanvasManager(canvasRef);
 

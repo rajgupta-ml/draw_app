@@ -64,6 +64,7 @@ export class CanvasManager {
       window.dispatchEvent(new Event("scale-change"));
     }
   }
+
   private handleScroll = (e: WheelEvent) => {
     e.preventDefault();
 
@@ -93,7 +94,6 @@ export class CanvasManager {
     this.interactionBehaviours
       .get(this.selectedTool)!
       .onMouseUp(this.createBehaviorContext(e));
-    console.log(this.shapes);
   };
 
   // Draw and render on canvas method
@@ -140,6 +140,7 @@ export class CanvasManager {
   getRedoShape = () : Shape[] => {
     return this.shapes
   }
+
 
   undo = () => {
     if(this.shapes.length  > 0){
@@ -221,6 +222,11 @@ export class CanvasManager {
         const renderer = this.getRendererForShape(shape);
         return renderer ? renderer.isPointInShape(shape, px, py) : false;
       },
+      getScrollPositionX : () => this.scrollPositionX,
+      getScrollPositionY : () => this.scrollPositionY,
+      setScrollPositionX : (x : number ) => this.scrollPositionX = x,
+      setScrollPositionY : (y : number ) => this.scrollPositionY = y
+
     };
   }
 }
