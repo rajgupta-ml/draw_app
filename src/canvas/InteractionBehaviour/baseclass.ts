@@ -23,10 +23,10 @@ export interface IInteractionBehavior {
   onMouseMove(context: BehaviorContext): void;
   onMouseUp(context: BehaviorContext): void;
   /** A method to render temporary graphics, like a preview or selection box. */
-  renderShapes(
+  renderShapes?(
     context: Pick<BehaviorContext, "roughCanvas">,
     shape: Shape,
   ): void;
-  previewShape(context: Pick<BehaviorContext, "roughCanvas">): void;
+  previewShape?(context: Pick<BehaviorContext, "roughCanvas">): void;
   getShapeRenderer?(): IShapeRenders<Shape>;
 }

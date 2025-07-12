@@ -41,7 +41,7 @@ const CanvasLayout = () => {
         width={width}
         height={height}
       ></canvas>
-
+      {/* Buffer Canvas Which is below the real canvas for performace optimization*/}
       <canvas 
         ref={offScreenCanvasRef}
         width={width}

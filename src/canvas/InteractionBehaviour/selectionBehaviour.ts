@@ -240,9 +240,6 @@ export class SelectionBehavior implements IInteractionBehavior {
     }
   }
 
-  renderShapes(): void {
-    /* No-op */
-  }
 
   private updateSelectionBox(): void {
     if (this.selectedShapes.length === 0) {

@@ -37,14 +37,4 @@ export class HandBehaviour implements IInteractionBehavior{
         this.clicked = false;
     }
 
-
-    // No Overide required
-    previewShape(context: Pick<BehaviorContext, "roughCanvas">): void {
-        
-    }
-
-    renderShapes(context: Pick<BehaviorContext, "roughCanvas">, shape: Shape): void {
-        
-    }
-
 }

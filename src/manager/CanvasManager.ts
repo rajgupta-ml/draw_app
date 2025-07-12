@@ -68,7 +68,10 @@ export class CanvasManager {
       } else if (e.key === "0") {
         e.preventDefault();
         this.scale = 1;
+        this.scrollPositionX = 0;
+        this.scrollPositionY = 0;
         this.drawCanvas({ isScrolling: false });
+
       }
       window.dispatchEvent(new Event("scale-change"));
     }
@@ -80,6 +83,8 @@ export class CanvasManager {
       e.preventDefault();
       return;
     };
+
+    
     e.preventDefault();
 
     if(this.maxScrollX === 0 || this.maxScrollY === 0){
@@ -119,23 +124,27 @@ export class CanvasManager {
     targetCtx.resetTransform();
     targetCtx.clearRect(0, 0, this.canvas.width , this.canvas.height );
     
-    targetCtx.translate(-this.scrollPositionX, -this.scrollPositionY);
     targetCtx.scale(this.scale, this.scale);
+    targetCtx.translate(-this.scrollPositionX, -this.scrollPositionY);
 
 
     // Rendering the Shapes from history
     this.shapes.map((shape) => {
-      this.interactionBehaviours
-        .get(shape.type)!
-        .renderShapes({ roughCanvas: targetRoughCanvas }, shape);
+      const behavior = this.interactionBehaviours.get(shape.type);
+      if(behavior && behavior.renderShapes){
+        behavior.renderShapes({roughCanvas : targetRoughCanvas}, shape)
+      }
     });
 
     // Drawing the shape preview
     if (!isScrolling) {
-      this.interactionBehaviours
-        .get(this.selectedTool)!
-        .previewShape({ roughCanvas: targetRoughCanvas });
+      const behavior = this.interactionBehaviours.get(this.selectedTool);
+      if(behavior && behavior.previewShape){
+        behavior.previewShape({roughCanvas : targetRoughCanvas})
+      }
     }
+
+
     targetCtx.restore();
 
 
@@ -198,20 +207,40 @@ export class CanvasManager {
   }
 
   scaleUp = () => {
+
+    const oldScale = this.scale;
     const scaleFactor = 1.1; // 10% increase
-    this.scale = Math.min(this.maxScale, this.scale * scaleFactor);
-    this.ctx.scale(scaleFactor, scaleFactor);
+    const newScale = Math.min(this.maxScale, this.scale * scaleFactor);
+    
+    const centerScreenX = this.canvas.width / 2;
+    const centerScreenY = this.canvas.height / 2;
+
+    const worldCenterX = centerScreenX / oldScale + this.scrollPositionX;
+    const worldCenterY = centerScreenY / oldScale + this.scrollPositionY;
+
+    this.scrollPositionX = worldCenterX - (centerScreenX / newScale);
+    this.scrollPositionY = worldCenterY - (centerScreenY / newScale);
+
+    this.scale = newScale;
     this.drawCanvas({ isScrolling: false });
-    console.log("New scale:", this.scale);
   } 
 
   scaleDown = () => {
-    console.log("Scaling down");
     const scaleFactor = 0.9; // 10% decrease
-    this.scale = Math.max(this.minScale, this.scale * scaleFactor);
-    this.ctx.scale(scaleFactor, scaleFactor);
+    const oldScale = this.scale;
+    const newScale = Math.max(this.minScale, this.scale * scaleFactor);
+
+    const centerScreenX = this.canvas.width / 2;
+    const centerScreenY = this.canvas.height / 2;
+
+    const worldCenterX = centerScreenX / oldScale + this.scrollPositionX;
+    const worldCenterY = centerScreenY / oldScale + this.scrollPositionY;
+
+    this.scrollPositionX = worldCenterX - (centerScreenX / newScale);
+    this.scrollPositionY = worldCenterY - (centerScreenY / newScale);
+
+    this.scale = newScale;
     this.drawCanvas({ isScrolling: false });
-    console.log("New scale:", this.scale);
   }
 
   // Helper
@@ -220,10 +249,14 @@ export class CanvasManager {
     coorY: number,
   ): { x: number; y: number } => {
     const canvasRect = this.canvas.getBoundingClientRect();
-    const x = (coorX - canvasRect.left + this.scrollPositionX) / this.scale  ;
-    const y = (coorY - canvasRect.top + this.scrollPositionY) / this.scale  ;
 
-    return { x, y };
+    const rawX  = coorX - canvasRect.left
+    const rawY  = coorY - canvasRect.top
+
+    const worldX = (rawX / this.scale) + this.scrollPositionX;
+    const worldY = (rawY / this.scale) + this.scrollPositionY;
+
+    return { x : worldX, y : worldY };
   };
 
   private getRendererForShape(shape: Shape): IShapeRenders<Shape> | null {
