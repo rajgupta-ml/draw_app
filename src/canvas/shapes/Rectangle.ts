@@ -3,10 +3,11 @@ import { IShapeRenders } from "./baseClass";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import { shapeConfig } from "@/constants/canvasConstant";
 import { TOOLS_NAME } from "@/types/toolsTypes";
+import type { Options } from "roughjs/bin/core";
 export class Rectangle extends IShapeRenders<RectShape> {
   render = (existingShape: RectShape, canvas: RoughCanvas) => {
 
-    const config = existingShape.config ?? shapeConfig
+    const config = (existingShape.config ?? shapeConfig) as Options
     canvas.rectangle(
       existingShape.x,
       existingShape.y,

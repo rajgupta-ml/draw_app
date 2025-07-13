@@ -8,12 +8,8 @@ import type {
 import type { IShapeRenders } from "@/canvas/shapes/baseClass";
 
 export class CanvasManager {
-  private canvas: HTMLCanvasElement;
   private interactionBehaviours: typeof InteractionBehaviourList = InteractionBehaviourList;
   private roughCanvas: RoughCanvas;
-  private ctx: CanvasRenderingContext2D;
-  private offscreenCanvas: HTMLCanvasElement;
-  private offscreenCtx: CanvasRenderingContext2D;
   private scrollPositionX: number = 0;
   private scrollPositionY: number = 0;
   private shapes: Shape[] = [];
@@ -24,15 +20,15 @@ export class CanvasManager {
   private maxScrollY: number = 0;
   private minScale: number = 0.1; 
   private maxScale: number = 10; 
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, offScreenCanvas: HTMLCanvasElement, offScreenCanvasctx: CanvasRenderingContext2D) {
-    this.canvas = canvas;
-    this.ctx = ctx;
+  constructor(
+    private canvas: HTMLCanvasElement, 
+    private ctx: CanvasRenderingContext2D, 
+    private offScreenCanvas: HTMLCanvasElement, 
+    private offScreenCanvasctx: CanvasRenderingContext2D,
+    private inputArea : HTMLDivElement,
+  ) {
     
-    
-    this.offscreenCanvas = offScreenCanvas  
-    this.offscreenCtx = offScreenCanvasctx;
-    
-    this.roughCanvas = new RoughCanvas(this.offscreenCanvas);
+    this.roughCanvas = new RoughCanvas(this.offScreenCanvas);
     this.selectedTool = TOOLS_NAME.RECT
     this.canvas.style.cursor = "crosshair"
     canvas.focus();
@@ -100,6 +96,7 @@ export class CanvasManager {
   };
 
   private handleMouseDown = (e: MouseEvent) => {
+    e.preventDefault();
     this.interactionBehaviours
       .get(this.selectedTool)!
       .onMouseDown(this.createBehaviorContext(e));
@@ -117,7 +114,7 @@ export class CanvasManager {
 
   // Draw and render on canvas method
   drawCanvas = ({ isScrolling }: { isScrolling: boolean }) => {
-    const targetCtx = this.offscreenCtx;
+    const targetCtx = this.offScreenCanvasctx;
     const targetRoughCanvas = this.roughCanvas
     targetCtx.save();
 
@@ -127,13 +124,12 @@ export class CanvasManager {
     targetCtx.scale(this.scale, this.scale);
     targetCtx.translate(-this.scrollPositionX, -this.scrollPositionY);
 
-
-    console.log(this.shapes)
+    console.log(this.shapes);
     // Rendering the Shapes from history
     this.shapes.map((shape) => {
       const behavior = this.interactionBehaviours.get(shape.type);
       if(behavior && behavior.renderShapes){
-        behavior.renderShapes({roughCanvas : targetRoughCanvas}, shape)
+        behavior.renderShapes({roughCanvas : targetRoughCanvas, ctx : targetCtx}, shape)
       }
     });
 
@@ -144,18 +140,16 @@ export class CanvasManager {
         behavior.previewShape({roughCanvas : targetRoughCanvas, ctx : targetCtx})
       }
     }
-
-
     targetCtx.restore();
 
-
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); 
-    this.ctx.drawImage(this.offscreenCanvas, 0, 0);  
+    this.ctx.drawImage(this.offScreenCanvas, 0, 0);  
     };
 
   // Setter and Getter Methods
   setTool = (tool: TOOLS_NAME) => {
     this.selectedTool = tool;
+    
     if(this.selectedTool === TOOLS_NAME.ERASER){
       this.canvas.style.cursor = "none"
     }
@@ -271,13 +265,21 @@ export class CanvasManager {
   private createBehaviorContext(e: MouseEvent): BehaviorContext {
     const { x, y } = this.getCoordinateAdjustedByScrollAndScale(e.clientX, e.clientY);
     return {
+      rawX : e.clientX,
+      rawY : e.clientY,
       x,
       y,
       shapes: this.shapes,
       canvas: this.canvas,
-      ctx: this.ctx,
+      inputArea : this.inputArea,
+      ctx: this.offScreenCanvasctx,
       roughCanvas: this.roughCanvas,
       addShape: (shape) => this.shapes.push(shape),
+      removeShape: (id : string) => {
+        const index = this.shapes.findIndex(shape => shape.id === id);
+        console.log({index})
+        if (index !== -1) this.shapes.splice(index, 1);
+      },
       addRedoShape : (shape) => this.redoShape.push(shape),
       requestRedraw: (isScrolling = false) => this.drawCanvas({ isScrolling }),
       isPointInShape: (shape: Shape, px: number, py: number) => {

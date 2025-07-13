@@ -53,10 +53,24 @@ export interface PenShape extends IBase {
   type: TOOLS_NAME.PEN;
   lineArray: PenArrayShape[];
 };
+
+
+export interface TextShape extends IBase {
+  type : TOOLS_NAME.TEXT,
+  x : number;
+  y : number;
+  w : number;
+  text : string,
+  "font_size" : string;
+  "font_weight" : string;
+  "font_family" : string;
+  "color" : string;
+}
 export type Shape =
   | RectShape
   | EclipseShape
   | LineShape
   | RightArrowShape
   | DiamondShape
-  | PenShape;
+  | PenShape
+  | TextShape;

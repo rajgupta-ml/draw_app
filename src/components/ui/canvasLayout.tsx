@@ -6,12 +6,14 @@ import React, { useEffect, useRef } from "react";
 import Toolbar from "./Toolbar";
 import ZoomLayout from "./ZoomLayout";
 import { Loader } from "lucide-react";
+import InputLayout from "./inputLayout";
 
 const CanvasLayout = () => {
   const { width = 800, height = 600 } = useWindowDimension(); 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const inputAreaRef = useRef<HTMLDivElement>(null);
   const offScreenCanvasRef = useRef<HTMLCanvasElement>(null);
-  const { isLoading, canvasManager, error } = useCanvasManager(canvasRef, offScreenCanvasRef);
+  const { isLoading, canvasManager, error } = useCanvasManager(canvasRef, offScreenCanvasRef, inputAreaRef);
 
   useEffect(() => {
     if (canvasManager && canvasRef.current) {
@@ -35,7 +37,7 @@ const CanvasLayout = () => {
         </div>
       )}
       <div className="overflow-hidden overflow-y-hidden">
-
+      <InputLayout ref = {inputAreaRef}></InputLayout>
       <canvas
         className="bg-background outline-none"
         tabIndex={0}

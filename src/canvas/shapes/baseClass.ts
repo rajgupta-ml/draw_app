@@ -8,7 +8,7 @@ import type { RoughCanvas } from "roughjs/bin/canvas";
 
 export abstract class IShapeRenders<T extends Shape> {
   abstract createShape(currentPosition: currentPositionType): T;
-  abstract render(existingShape: T, canvas: RoughCanvas): void;
+  abstract render(existingShape: T, canvas: RoughCanvas, ctx : CanvasRenderingContext2D): void;
   abstract isPointInShape(shape: T, px: number, py: number): boolean;
 
   protected isPointInLine(

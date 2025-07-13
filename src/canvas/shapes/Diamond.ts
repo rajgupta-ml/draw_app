@@ -3,6 +3,7 @@ import { TOOLS_NAME } from "@/types/toolsTypes";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import type { currentPositionType, DiamondShape } from "@/types/canvasTypes";
 import { shapeConfig } from "@/constants/canvasConstant";
+import type { Options } from "roughjs/bin/core";
 
 export class Diamond extends IShapeRenders<DiamondShape> {
   createShape(currentPosition: currentPositionType): DiamondShape {
@@ -22,7 +23,7 @@ export class Diamond extends IShapeRenders<DiamondShape> {
   render(existingShape: DiamondShape, canvas: RoughCanvas) {
     const { x, y, w, h, config } = existingShape;
 
-    const configValue = config ?? shapeConfig 
+    const configValue = (config ?? shapeConfig) as Options 
 
     // Calculate the four diamond points
     // Top point

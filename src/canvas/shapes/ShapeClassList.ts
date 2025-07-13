@@ -21,6 +21,8 @@ import { SelectionBehavior } from "../InteractionBehaviour/selectionBehaviour";
 import { ToolCase } from "lucide-react";
 import { HandBehaviour } from "../InteractionBehaviour/HandBehaviour";
 import { EraserBehaviour } from "../InteractionBehaviour/EraserBehaviour";
+import { TextBehaviour } from "../InteractionBehaviour/TextBehaviour";
+import { Text } from "./text";
 
 export const InteractionBehaviourList = new Map<
   TOOLS_NAME,
@@ -37,5 +39,6 @@ export const InteractionBehaviourList = new Map<
   [TOOLS_NAME.PEN, new PenBehavior(new Pen())],
   [TOOLS_NAME.MOUSE, new SelectionBehavior()],
   [TOOLS_NAME.HAND,  new HandBehaviour()],
-  [TOOLS_NAME.ERASER, new EraserBehaviour()]
+  [TOOLS_NAME.ERASER, new EraserBehaviour()],
+  [TOOLS_NAME.TEXT, new TextBehaviour(new Text())]
 ]);

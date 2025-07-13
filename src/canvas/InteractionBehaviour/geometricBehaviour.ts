@@ -52,17 +52,17 @@ export class GeometricBehaviour<T extends GeometricShape>
     this.dragged = false;
   }
   renderShapes(
-    { roughCanvas }: Pick<BehaviorContext, "roughCanvas">,
+    { roughCanvas, ctx }: Pick<BehaviorContext, "roughCanvas" | "ctx">,
     shape: T,
   ): void {
     if (this.shapeRenders) {
-      this.shapeRenders.render(shape, roughCanvas);
+      this.shapeRenders.render(shape, roughCanvas, ctx);
     }
   }
-  previewShape({ roughCanvas }: Pick<BehaviorContext, "roughCanvas">): void {
+  previewShape({ roughCanvas, ctx }: Pick<BehaviorContext, "roughCanvas" | "ctx">): void {
     if (this.shapeRenders && this.dragged) {
       const shape = this.shapeRenders.createShape(this.currentPosition);
-      this.shapeRenders.render(shape, roughCanvas);
+      this.shapeRenders.render(shape, roughCanvas, ctx);
     }
   }
   getShapeRenderer(): IShapeRenders<T> {

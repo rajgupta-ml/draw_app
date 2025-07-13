@@ -3,10 +3,11 @@ import { shapeConfig } from "@/constants/canvasConstant";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import { TOOLS_NAME } from "@/types/toolsTypes";
 import { IShapeRenders } from "./baseClass";
+import type { Options } from "roughjs/bin/core";
 
 export class Ellipse extends IShapeRenders<EclipseShape> {
   render = (existingShape: EclipseShape, canvas: RoughCanvas) => {
-    const config = existingShape.config ?? shapeConfig
+    const config = (existingShape.config ?? shapeConfig) as Options
     canvas.ellipse(
       existingShape.x,
       existingShape.y,

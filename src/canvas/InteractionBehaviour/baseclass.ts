@@ -5,11 +5,15 @@ import type { IShapeRenders } from "../shapes/baseClass";
 export interface BehaviorContext {
   x: number;
   y: number;
+  rawX : number;
+  rawY : number;
   shapes: Shape[];
+  inputArea: HTMLDivElement;
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   roughCanvas: RoughCanvas;
   addShape: (shape: Shape) => void;
+  removeShape : (id : string) => void;
   addRedoShape : (shape: Shape) => void;
   requestRedraw: (isScrolling?: boolean) => void;
   isPointInShape: (shape: Shape, px: number, py: number) => Boolean;
@@ -25,7 +29,7 @@ export interface IInteractionBehavior {
   onMouseUp(context: BehaviorContext): void;
   /** A method to render temporary graphics, like a preview or selection box. */
   renderShapes?(
-    context: Pick<BehaviorContext, "roughCanvas">,
+    context: Pick<BehaviorContext, "roughCanvas" | "ctx">,
     shape: Shape,
   ): void;
   previewShape?(context: Pick<BehaviorContext, "roughCanvas" | "ctx">): void;

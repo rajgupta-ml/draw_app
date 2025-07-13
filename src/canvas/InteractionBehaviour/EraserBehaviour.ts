@@ -1,4 +1,4 @@
-import type { DiamondShape, LineShape, RectShape, RightArrowShape, Shape } from "@/types/canvasTypes";
+import type { DiamondShape, LineShape, RectShape, RightArrowShape, Shape, TextShape } from "@/types/canvasTypes";
 import type { BehaviorContext, IInteractionBehavior } from "./baseclass";
 import { TOOLS_NAME } from "@/types/toolsTypes";
 import { Rectangle } from "../shapes/Rectangle";
@@ -9,6 +9,7 @@ import { RightArrow } from "../shapes/Right_Arrow";
 import { Line } from "../shapes/Line";
 import { Ellipse } from "../shapes/Ellipse";
 import { eraserShapeConfig, shapeConfig } from "@/constants/canvasConstant";
+import { Text } from "../shapes/text";
 
 export class EraserBehaviour implements IInteractionBehavior{
     private clicked : boolean = false
@@ -21,7 +22,8 @@ export class EraserBehaviour implements IInteractionBehavior{
         [TOOLS_NAME.LINE, (new Line())],
         [TOOLS_NAME.RIGHT_ARROW, new RightArrow()],
         [TOOLS_NAME.DIAMOND, new Diamond()],
-        [TOOLS_NAME.PEN, new Pen()]
+        [TOOLS_NAME.PEN, new Pen()],
+        [TOOLS_NAME.TEXT, new Text()]
     ]);
 
     onMouseDown(context: BehaviorContext): void {
@@ -61,7 +63,12 @@ export class EraserBehaviour implements IInteractionBehavior{
             return
         };
         shapes.forEach((shape, index) => {
-            const newShape = {...shape, config : eraserShapeConfig}
+            let newShape : Shape | null = null
+            if(shape.type === TOOLS_NAME.TEXT){
+                newShape = {...shape as TextShape, color:"gray"}
+            }else{
+                newShape = {...shape, config : eraserShapeConfig}
+            }
             const shapeBehaviour = this.shapeBehaviours.get(shape.type);
             if(shapeBehaviour?.isPointInShape(shape, x,y)){
                 this.ShapeWhichNeedsToBeRemoved.push({shape , index});

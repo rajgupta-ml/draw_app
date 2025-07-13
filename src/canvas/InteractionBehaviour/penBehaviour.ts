@@ -39,22 +39,24 @@ export class PenBehavior implements IInteractionBehavior {
     this.dragged = false;
   }
   renderShapes(
-    { roughCanvas }: Pick<BehaviorContext, "roughCanvas">,
+    { roughCanvas,ctx }: Pick<BehaviorContext, "roughCanvas" | "ctx">,
     shape: PenShape,
   ): void {
     if (this.shapeRenders) {
       this.shapeRenders.render(
         { type: TOOLS_NAME.PEN, lineArray: shape.lineArray, config : shape.config  },
         roughCanvas,
+        ctx
       );
     }
   }
 
-  previewShape({ roughCanvas }: Pick<BehaviorContext, "roughCanvas">): void {
+  previewShape({ roughCanvas, ctx }: Pick<BehaviorContext, "roughCanvas" | "ctx">): void {
     if (this.shapeRenders && this.dragged && this.currentPath.length > 1) {
       this.shapeRenders.render(
         { type: TOOLS_NAME.PEN, lineArray: this.currentPath, config : shapeConfig },
         roughCanvas,
+        ctx
       );
     }
   }
