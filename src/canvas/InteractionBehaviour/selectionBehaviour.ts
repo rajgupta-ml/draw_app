@@ -731,7 +731,6 @@ export class SelectionBehavior implements IInteractionBehavior {
   }
 
   private recalculateTextWidth(textShape: TextShape): number {
-    // Extract numeric font size (remove 'px' if present)
     const fontSizeStr = textShape.config.font_size || '10';
     const fontSize = fontSizeStr.replace('px', '');
     const fontFamily = textShape.config.font_family || 'Arial';

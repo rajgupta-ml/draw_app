@@ -7,6 +7,7 @@ import Toolbar from "./Toolbar";
 import ZoomLayout from "./ZoomLayout";
 import { Loader } from "lucide-react";
 import InputLayout from "./inputLayout";
+import ConfigLayout from "./configLayout";
 
 const CanvasLayout = () => {
   const { width = 800, height = 600 } = useWindowDimension(); 
@@ -67,6 +68,7 @@ const CanvasLayout = () => {
             undo = {canvasManager.undo}
             redo = {canvasManager.redo}
           />
+        <ConfigLayout></ConfigLayout>
         </>
       )}
       </div>
