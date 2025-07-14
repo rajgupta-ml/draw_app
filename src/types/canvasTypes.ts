@@ -61,10 +61,12 @@ export interface TextShape extends IBase {
   y : number;
   w : number;
   text : string,
-  "font_size" : string;
-  "font_weight" : string;
-  "font_family" : string;
-  "color" : string;
+  config : {
+    "font_size" : string;
+    "font_weight" : string;
+    "font_family" : string;
+    "stroke" : string;
+  }
 }
 export type Shape =
   | RectShape

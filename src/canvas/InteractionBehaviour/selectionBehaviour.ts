@@ -303,7 +303,7 @@ export class SelectionBehavior implements IInteractionBehavior {
           return p.lineArray.map(([_, py]) => py);
         case TOOLS_NAME.TEXT:{
           const textShape = s as TextShape;
-          const fontSizeStr = textShape.font_size || "10";
+          const fontSizeStr = textShape.config.font_size || "10";
           const fontSize = parseInt(fontSizeStr.replace('px', ''));
           return [textShape.y, textShape.y + fontSize + 5];
         }
@@ -539,11 +539,11 @@ export class SelectionBehavior implements IInteractionBehavior {
           textShape.y = p1.y;
           
           // Scale font size based on both X and Y scaling for better proportions
-          const originalFontSizeStr = iState.font_size || "10";
+          const originalFontSizeStr = iState.config.font_size || "10";
           const originalFontSize = parseInt(originalFontSizeStr.replace('px', ''));
           const scaleFactor = Math.min(scaleX, scaleY); // Use the smaller scale to maintain aspect ratio
           const newFontSize = Math.max(1, Math.round(originalFontSize * scaleFactor));
-          textShape.font_size = `${newFontSize}px`;
+          textShape.config.font_size = `${newFontSize}px`;
 
           // Recalculate width using the new font size
           if (this.ctx) {
@@ -611,7 +611,7 @@ export class SelectionBehavior implements IInteractionBehavior {
         };
       case TOOLS_NAME.TEXT: {
         const text = shape as TextShape;
-        const fontSizeStr = text.font_size || "10";
+        const fontSizeStr = text.config.font_size || "10";
         const fontSize = parseInt(fontSizeStr.replace('px', ''));
         const width = this.ctx ? this.recalculateTextWidth(text) : text.w;
         return {
@@ -732,9 +732,9 @@ export class SelectionBehavior implements IInteractionBehavior {
 
   private recalculateTextWidth(textShape: TextShape): number {
     // Extract numeric font size (remove 'px' if present)
-    const fontSizeStr = textShape.font_size || '10';
+    const fontSizeStr = textShape.config.font_size || '10';
     const fontSize = fontSizeStr.replace('px', '');
-    const fontFamily = textShape.font_family || 'Arial';
+    const fontFamily = textShape.config.font_family || 'Arial';
     
     // Save current font
     const originalFont = this.ctx!.font;

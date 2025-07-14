@@ -6,6 +6,7 @@ import type {
   BehaviorContext,
 } from "@/canvas/InteractionBehaviour/baseclass";
 import type { IShapeRenders } from "@/canvas/shapes/baseClass";
+import { shapeConfig } from "@/constants/canvasConstant";
 
 export class CanvasManager {
   private interactionBehaviours: typeof InteractionBehaviourList = InteractionBehaviourList;
@@ -20,6 +21,7 @@ export class CanvasManager {
   private maxScrollY: number = 0;
   private minScale: number = 0.1; 
   private maxScale: number = 10; 
+  private theme: string | null = null;
   constructor(
     private canvas: HTMLCanvasElement, 
     private ctx: CanvasRenderingContext2D, 
@@ -27,7 +29,8 @@ export class CanvasManager {
     private offScreenCanvasctx: CanvasRenderingContext2D,
     private inputArea : HTMLDivElement,
   ) {
-    
+    this.theme = window.localStorage.getItem("theme");
+    this.theme === "dark" ? shapeConfig.stroke = "white" : shapeConfig.stroke = "black"
     this.roughCanvas = new RoughCanvas(this.offScreenCanvas);
     this.selectedTool = TOOLS_NAME.RECT
     this.canvas.style.cursor = "crosshair"
@@ -41,6 +44,7 @@ export class CanvasManager {
     this.canvas.addEventListener("mousemove", this.handleMouseMove);
     this.canvas.addEventListener("wheel", this.handleScroll);
     this.canvas.addEventListener("keydown", this.handleKeyPress);
+    window.addEventListener("theme-change", this.handleThemeChange);
   };
 
   destroyEventListeners = () => {
@@ -49,9 +53,18 @@ export class CanvasManager {
     this.canvas.removeEventListener("mousemove", this.handleMouseMove);
     this.canvas.removeEventListener("wheel", this.handleScroll);
     this.canvas.removeEventListener("keydown", this.handleKeyPress);
+    window.addEventListener("theme-change", this.handleThemeChange);
 
   };
 
+
+  private handleThemeChange = (event : Event) => {
+    console.log("Theme change")
+    const theme = (event as CustomEvent).detail.theme;
+    this.theme = theme;
+    this.theme === "dark" ? shapeConfig.stroke = "white" : shapeConfig.stroke = "black"
+    this.drawCanvas({isScrolling : false})
+  }
 
   private handleKeyPress = (e : KeyboardEvent) => {
     if (e.ctrlKey || e.metaKey) {
@@ -124,9 +137,19 @@ export class CanvasManager {
     targetCtx.scale(this.scale, this.scale);
     targetCtx.translate(-this.scrollPositionX, -this.scrollPositionY);
 
-    console.log(this.shapes);
-    // Rendering the Shapes from history
     this.shapes.map((shape) => {
+
+      if (shape.config) {
+        const themeDefaultStroke = this.theme === "dark" ? "white" : "black";
+        if (
+          shape.config.stroke === "black" ||
+          shape.config.stroke === "white"
+        ) {
+          shape.config.stroke = themeDefaultStroke;
+        }
+      }
+
+
       const behavior = this.interactionBehaviours.get(shape.type);
       if(behavior && behavior.renderShapes){
         behavior.renderShapes({roughCanvas : targetRoughCanvas, ctx : targetCtx}, shape)

@@ -10,6 +10,7 @@ import type {
   BehaviorContext,
   IInteractionBehavior,
 } from "../InteractionBehaviour/baseclass";
+import { shapeConfig } from "@/constants/canvasConstant";
 type GeometricShape =
   | RectShape
   | EclipseShape
@@ -45,7 +46,7 @@ export class GeometricBehaviour<T extends GeometricShape>
     if (this.dragged && this.shapeRenders) {
       const newShape = this.shapeRenders.createShape(this.currentPosition);
       if (newShape) {
-        addShape({ ...newShape, id: crypto.randomUUID() });
+        addShape({ ...newShape, id: crypto.randomUUID(), config : shapeConfig });
       }
       requestRedraw();
     }

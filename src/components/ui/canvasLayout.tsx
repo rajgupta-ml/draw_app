@@ -17,7 +17,6 @@ const CanvasLayout = () => {
 
   useEffect(() => {
     if (canvasManager && canvasRef.current) {
-      console.log("Drawing canvas with dimensions:", width, height);
       canvasManager.setMaxScroll();
       canvasManager.drawCanvas({ isScrolling: false });
     }
@@ -50,7 +49,7 @@ const CanvasLayout = () => {
         ref={offScreenCanvasRef}
         width={width}
         height={height}
-        style={{ display: 'none' }} // <--- Add this line to hide the canvas
+        style={{ display: 'none' }} 
       >
       </canvas>
       {canvasManager && (

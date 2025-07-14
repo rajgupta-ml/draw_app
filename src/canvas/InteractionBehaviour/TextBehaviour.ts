@@ -117,8 +117,8 @@ import { TOOLS_NAME } from "@/types/toolsTypes";
             const shape = this.shapeRender.createShape(currentPosition);
             shape.text = text;
             
-            const fontSize = this.textToEdit?.font_size || shape.font_size || '16';
-            const fontFamily = this.textToEdit?.font_family || shape.font_family || 'Arial';
+            const fontSize = this.textToEdit?.config.font_size || shape.config.font_size || '16';
+            const fontFamily = this.textToEdit?.config.font_family || shape.config.font_family || 'Arial';
             
             // Set the font on the context to match what will be rendered
             this.ctx!.font = `${fontSize}px ${fontFamily}`;
@@ -128,8 +128,8 @@ import { TOOLS_NAME } from "@/types/toolsTypes";
             shape.w = Math.floor(textWidth);
             
             // Also ensure the shape has the correct font properties
-            shape.font_size = fontSize;
-            shape.font_family = fontFamily
+            shape.config.font_size = fontSize;
+            shape.config.font_family = fontFamily
 
             if(text){
                 this.addShape!(shape);
