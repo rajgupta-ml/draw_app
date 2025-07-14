@@ -21,25 +21,18 @@ export class Text extends IShapeRenders<TextShape>{
     }
     render(existingShape: TextShape, canvas: RoughCanvas, ctx: CanvasRenderingContext2D): void {
         ctx.font = "16px Arial";
-        const fontSize = parseInt(existingShape.font_size.replace('px', ''));        const padding = 10;
         ctx.font = `${existingShape.font_size} ${existingShape.font_family}`
         ctx.fillStyle = existingShape.color
         ctx.textBaseline = "top"; 
         ctx.fillText(existingShape.text, existingShape.x , existingShape.y);
     }
     isPointInShape(shape : TextShape, px : number, py : number) {
-        const fontSize = parseInt(shape.font_size.replace('px', ''));        const padding = 10;
+        const fontSize = parseInt(shape.font_size.replace('px', ''));       
       
-        // Calculate the text's actual top coordinate from its baseline 'y'
-        const textTop = shape.y - fontSize;
-      
-        // Define the bounding box by applying padding to all four sides
-        const left = shape.x - shape.w;
-        const top = textTop;
-        const right = shape.x + shape.w;
+        const left = shape.x ;
+        const top = shape.y;
+        const right = shape.x + (shape.w );
         const bottom = shape.y + fontSize; // textTop + fontSize + padding
-      
-        // Return true if the point is within the symmetrical bounding box
         return px >= left && px <= right && py >= top && py <= bottom;
       }
 
