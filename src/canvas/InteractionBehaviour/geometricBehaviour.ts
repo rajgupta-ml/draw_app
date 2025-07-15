@@ -11,6 +11,7 @@ import type {
   IInteractionBehavior,
 } from "../InteractionBehaviour/baseclass";
 import { shapeConfig } from "@/constants/canvasConstant";
+import type { Options } from "roughjs/bin/core";
 type GeometricShape =
   | RectShape
   | EclipseShape
@@ -41,12 +42,13 @@ export class GeometricBehaviour<T extends GeometricShape>
       this.dragged = true;
     }
   }
-  onMouseUp({ requestRedraw, addShape }: BehaviorContext): void {
+  onMouseUp({ requestRedraw, addShape, config }: BehaviorContext): void {
     this.clicked = false;
     if (this.dragged && this.shapeRenders) {
       const newShape = this.shapeRenders.createShape(this.currentPosition);
+      const newShapeWithConfig = {...newShape, config}
       if (newShape) {
-        addShape({ ...newShape, id: crypto.randomUUID(), config : shapeConfig });
+        addShape({ ...newShapeWithConfig, id: crypto.randomUUID() });
       }
       requestRedraw();
     }
@@ -60,10 +62,11 @@ export class GeometricBehaviour<T extends GeometricShape>
       this.shapeRenders.render(shape, roughCanvas, ctx);
     }
   }
-  previewShape({ roughCanvas, ctx }: Pick<BehaviorContext, "roughCanvas" | "ctx">): void {
+  previewShape({ roughCanvas, ctx}: Pick<BehaviorContext, "roughCanvas" | "ctx">, config : Options): void {
     if (this.shapeRenders && this.dragged) {
       const shape = this.shapeRenders.createShape(this.currentPosition);
-      this.shapeRenders.render(shape, roughCanvas, ctx);
+      const newShapeWithConfig = {...shape, config}
+      this.shapeRenders.render(newShapeWithConfig, roughCanvas, ctx);
     }
   }
   getShapeRenderer(): IShapeRenders<T> {

@@ -59,20 +59,26 @@ export class EraserBehaviour implements IInteractionBehavior{
         this.currentMouseX = x;
         this.currentMouseY = y;
         if(!this.clicked) {
-            requestRedraw();
             return
         };
         shapes.forEach((shape, index) => {
             let newShape : Shape | null = null
             if(shape.type === TOOLS_NAME.TEXT){
-                newShape = {...shape as TextShape, color:"gray"}
-            }else{
+                newShape = {
+                    ...(shape as TextShape), // Copy all properties from the original shape
+                    config: {
+                        ...(shape as TextShape).config, // Copy existing config properties from the original shape
+                        stroke: "grey" // Set the stroke color to "grey"
+                    }
+                };            }else{
                 newShape = {...shape, config : eraserShapeConfig}
             }
             const shapeBehaviour = this.shapeBehaviours.get(shape.type);
             if(shapeBehaviour?.isPointInShape(shape, x,y)){
                 this.ShapeWhichNeedsToBeRemoved.push({shape , index});
-                shapes[index] = newShape
+                if(newShape){
+                    shapes[index] = newShape
+                }
             }
         })
 

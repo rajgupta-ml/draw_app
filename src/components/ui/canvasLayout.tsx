@@ -1,4 +1,3 @@
-// components/CanvasLayout.tsx
 "use client";
 import { useWindowDimension } from "@/hooks/useWindowDimension";
 import { useCanvasManager } from "@/hooks/useCanvasManager";
@@ -8,6 +7,7 @@ import ZoomLayout from "./ZoomLayout";
 import { Loader } from "lucide-react";
 import InputLayout from "./inputLayout";
 import ConfigLayout from "./configLayout";
+import ConfigContextProvider from "@/context/configContext";
 
 const CanvasLayout = () => {
   const { width = 800, height = 600 } = useWindowDimension(); 
@@ -68,7 +68,9 @@ const CanvasLayout = () => {
             undo = {canvasManager.undo}
             redo = {canvasManager.redo}
           />
-        <ConfigLayout></ConfigLayout>
+        <ConfigContextProvider>
+          <ConfigLayout></ConfigLayout>
+        </ConfigContextProvider>
         </>
       )}
       </div>

@@ -1,5 +1,6 @@
 import type { currentPositionType, Shape } from "@/types/canvasTypes";
 import type { RoughCanvas } from "roughjs/bin/canvas";
+import type { Options } from "roughjs/bin/core";
 
 // export interface IShapeRenders<T extends Shape> {
 //   createShape: (currentPosition: currentPositionType) => T;

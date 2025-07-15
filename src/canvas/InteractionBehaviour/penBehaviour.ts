@@ -6,6 +6,7 @@ import type {
   IInteractionBehavior,
 } from "../InteractionBehaviour/baseclass";
 import { shapeConfig } from "@/constants/canvasConstant";
+import type { Options } from "roughjs/bin/core";
 
 export class PenBehavior implements IInteractionBehavior {
   private currentPath: PenArrayShape[] = [];
@@ -23,7 +24,7 @@ export class PenBehavior implements IInteractionBehavior {
       this.dragged = true;
     }
   }
-  onMouseUp({ requestRedraw, addShape }: BehaviorContext): void {
+  onMouseUp({ requestRedraw, addShape, config }: BehaviorContext): void {
     this.clicked = false;
     if (this.dragged && this.shapeRenders && this.currentPath.length > 1) {
       const newShape: PenShape = {
@@ -31,7 +32,7 @@ export class PenBehavior implements IInteractionBehavior {
         lineArray: [...this.currentPath],
       };
       if (newShape) {
-        addShape({ ...newShape, id: crypto.randomUUID(), config : shapeConfig });
+        addShape({ ...newShape, id: crypto.randomUUID(), config : (config as Record<string, string>) });
       }
       requestRedraw();
       this.currentPath = [];
@@ -51,10 +52,10 @@ export class PenBehavior implements IInteractionBehavior {
     }
   }
 
-  previewShape({ roughCanvas, ctx }: Pick<BehaviorContext, "roughCanvas" | "ctx">): void {
+  previewShape({ roughCanvas, ctx }: Pick<BehaviorContext, "roughCanvas" | "ctx">, config : Options): void {
     if (this.shapeRenders && this.dragged && this.currentPath.length > 1) {
       this.shapeRenders.render(
-        { type: TOOLS_NAME.PEN, lineArray: this.currentPath, config : shapeConfig },
+        { type: TOOLS_NAME.PEN, lineArray: this.currentPath, config : (config as Record<string, string>)},
         roughCanvas,
         ctx
       );

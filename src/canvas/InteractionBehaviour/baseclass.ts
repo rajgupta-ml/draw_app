@@ -1,12 +1,14 @@
 import type { Shape } from "@/types/canvasTypes";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import type { IShapeRenders } from "../shapes/baseClass";
+import type { Options } from "roughjs/bin/core";
 
 export interface BehaviorContext {
   x: number;
   y: number;
   rawX : number;
   rawY : number;
+  config : Options;
   shapes: Shape[];
   inputArea: HTMLDivElement;
   canvas: HTMLCanvasElement;
@@ -32,6 +34,6 @@ export interface IInteractionBehavior {
     context: Pick<BehaviorContext, "roughCanvas" | "ctx">,
     shape: Shape,
   ): void;
-  previewShape?(context: Pick<BehaviorContext, "roughCanvas" | "ctx">): void;
+  previewShape?(context: Pick<BehaviorContext, "roughCanvas" | "ctx">, config: Options): void;
   getShapeRenderer?(): IShapeRenders<Shape>;
 }

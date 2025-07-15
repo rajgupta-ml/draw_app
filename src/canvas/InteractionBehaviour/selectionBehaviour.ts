@@ -50,7 +50,7 @@ export class SelectionBehavior implements IInteractionBehavior {
     y2: number;
   } | null = null;
 
-  onMouseDown({
+  onMouseDown({ 
     x,
     y,
     shapes,
