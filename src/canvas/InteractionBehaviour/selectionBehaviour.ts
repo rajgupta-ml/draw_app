@@ -86,6 +86,7 @@ export class SelectionBehavior implements IInteractionBehavior {
         );
         drawCanvas();
         if(this.selectedShapes.length > 0){
+          manager.selectedShape = this.selectedShapes;
           // Write now edit can only be done on single shape not in group
           window.dispatchEvent(new CustomEvent("selectShape", {detail : {selectedShapes : this.selectedShapes[0] }}))
         }

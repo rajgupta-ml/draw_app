@@ -1,4 +1,5 @@
 import { ToolComponent } from "@/constants/toolbarConstant";
+import { useCanvasManagerContext } from "@/context/useCanvasManager";
 import { cn } from "@/lib/utils";
 import type { TOOLS_NAME } from "@/types/toolsTypes";
 import React, { useState } from "react";
@@ -7,8 +8,10 @@ interface IToolbar {
   setTool: ((tool: TOOLS_NAME) => void) ;
   getTool: (() => TOOLS_NAME);
 }
-const Toolbar = ({ setTool, getTool }: IToolbar) => {
+const Toolbar = () => {
   const [state, setState] = useState<TOOLS_NAME>();
+  const {canvasManager} = useCanvasManagerContext();
+  const {setTool, getTool} = canvasManager;
   const handleClick = (name: TOOLS_NAME) => {
       setTool(name);
       setState(name);    

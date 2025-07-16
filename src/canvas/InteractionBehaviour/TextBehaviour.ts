@@ -20,7 +20,6 @@
                 let shape : Shape | null = null;
                 let originalIndex = 0;
                 for(let i = shapes.length - 1; i >= 0; i--){
-                    console.log("I reach here")
                     shape = shapes[i]!
                     if(shape.type === TOOLS_NAME.TEXT && this.shapeRender.isPointInShape(shape as TextShape, x, y)){
                         canvas.style.cursor = "text";

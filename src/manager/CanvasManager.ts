@@ -18,7 +18,7 @@ export class CanvasManager {
   scrollPositionX: number = 0;
   scrollPositionY: number = 0;
   shapes: Shape[] = [];
-  config: TextOptionsPlusGeometricOptions | null = null
+  config: TextOptionsPlusGeometricOptions;
   selectedTool: TOOLS_NAME;
   scale: number = 1; 
   theme: string | null = null;
@@ -27,6 +27,7 @@ export class CanvasManager {
   offScreenCanvas: HTMLCanvasElement; 
   offScreenCanvasctx: CanvasRenderingContext2D;
   inputArea : HTMLDivElement;
+  selectedShape : Shape[] = [];
   private interactionBehaviours: typeof InteractionBehaviourList = InteractionBehaviourList;
   private undoStack : ICommand[] = [];
   private redoStack : ICommand[] = [];
@@ -43,8 +44,10 @@ export class CanvasManager {
     offScreenCanvas: HTMLCanvasElement, 
     offScreenCanvasctx: CanvasRenderingContext2D,
     inputArea : HTMLDivElement,
+    config : TextOptionsPlusGeometricOptions,
     private toggleSidebar : (args : sidebarType | null) => void,
   ) {
+    this.config = config;
     this.canvas = canvas;
     this.ctx = ctx;
     this.offScreenCanvas = offScreenCanvas;
@@ -315,6 +318,9 @@ export class CanvasManager {
     this.scale = newScale;
     this.drawCanvas();
   }
+
+
+  
 
   // Helper
   private getCoordinateAdjustedByScrollAndScale = (

@@ -1,32 +1,37 @@
 "use client";
 import { useWindowDimension } from "@/hooks/useWindowDimension";
-import { useCanvasManager } from "@/hooks/useCanvasManager";
 import React, { useEffect, useRef } from "react";
 import Toolbar from "./Toolbar";
 import ZoomLayout from "./ZoomLayout";
 import { Loader } from "lucide-react";
 import InputLayout from "./inputLayout";
 import ConfigLayout from "./configLayout";
-import ConfigContextProvider, { useConfig } from "@/context/useConfigContext";
+import ConfigContextProvider from "@/context/useConfigContext";
 import { SidebarContextProvider } from "@/context/useSidebar";
 import { SelectedShapeProvider } from "@/context/useSelectedShape";
+import { CanvasManagerProvider, useCanvasManagerContext } from "@/context/useCanvasManager";
 
 const CanvasLayout = () => {
-  const { width = 800, height = 600 } = useWindowDimension(); 
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const inputAreaRef = useRef<HTMLDivElement>(null);
-  const offScreenCanvasRef = useRef<HTMLCanvasElement>(null);
-  const { isLoading, canvasManager, error } = useCanvasManager(canvasRef, offScreenCanvasRef, inputAreaRef);
-  const {config, handleConfigChange} = useConfig();
+  const { width, height } = useWindowDimension();
+  const { canvasManager, canvasRef, inputAreaRef, offscreenCanvasRef, error, isLoading } = useCanvasManagerContext();
+
   useEffect(() => {
-    if (canvasManager && canvasRef.current) {
+    if (canvasManager && canvasRef.current && offscreenCanvasRef.current && width && height) {
+      canvasRef.current.width = width;
+      canvasRef.current.height = height;
+      offscreenCanvasRef.current.width = width;
+      offscreenCanvasRef.current.height = height;
+      
       canvasManager.setMaxScroll();
-      canvasManager.drawCanvas(false);   
-      // This is to only intial send the config;
-      handleConfigChange({...config});
+      canvasManager.drawCanvas();
     }
   }, [width, height, canvasManager]);
 
+  useEffect(() => {
+    if (canvasManager && canvasRef.current) {
+      canvasManager.setMaxScroll();
+    }
+  }, [canvasManager]); // Only depend on canvasManager
 
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -34,7 +39,6 @@ const CanvasLayout = () => {
 
   return (
     <>
-
       {isLoading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center">
           <div className="animate-spin">
@@ -43,58 +47,48 @@ const CanvasLayout = () => {
         </div>
       )}
       <div className="overflow-hidden overflow-y-hidden">
-      <InputLayout ref = {inputAreaRef}></InputLayout>
-      <canvas
-        className="bg-background outline-none"
-        tabIndex={0}
-        ref={canvasRef}
-        width={width}
-        height={height}
-      ></canvas>
-      {/* Buffer Canvas Which is below the real canvas for performace optimization*/}
-      <canvas 
-        ref={offScreenCanvasRef}
-        width={width}
-        height={height}
-        style={{ display: 'none' }} 
-      >
-      </canvas>
-      {canvasManager && (
-        <>
-          <Toolbar
-            setTool={canvasManager.setTool}
-            getTool={canvasManager.getTool}
-          />
-          <ZoomLayout
-            getScale={canvasManager.getScale}
-            scaleUp={canvasManager.scaleUp}
-            scaleDown={canvasManager.scaleDown}
-            undoQueue = {canvasManager.getShape}
-            redoQueue = {canvasManager.getRedoShape}
-            undo = {canvasManager.undo}
-            redo = {canvasManager.redo}
-          />
-          <ConfigLayout></ConfigLayout>
-        </>
-      )}
+        <InputLayout ref={inputAreaRef}></InputLayout>
+        
+        <canvas
+          className="bg-background outline-none"
+          tabIndex={0}
+          ref={canvasRef}
+          width={width}
+          height={height}
+        ></canvas>
+        {/* Buffer Canvas Which is below the real canvas for performance optimization*/}
+        <canvas
+          ref={offscreenCanvasRef}
+          width={width}
+          height={height}
+          style={{ display: 'none' }}
+        >
+        </canvas>
+
+        {canvasManager && (
+          <>
+            <Toolbar/>
+            <ZoomLayout/>
+            <ConfigLayout></ConfigLayout>
+          </>
+        )}
       </div>
     </>
   );
 };
 
-
-
- const CanvasLayoutWrappedWithProviders = () => {
-  return(
-
+const CanvasLayoutWrappedWithProviders = () => {
+  return (
     <SidebarContextProvider>
       <ConfigContextProvider>
-        <SelectedShapeProvider>
-          <CanvasLayout></CanvasLayout>
-        </SelectedShapeProvider>
+        <CanvasManagerProvider>
+          <SelectedShapeProvider>
+            <CanvasLayout></CanvasLayout>
+          </SelectedShapeProvider>
+        </CanvasManagerProvider>
       </ConfigContextProvider>
     </SidebarContextProvider>
-  )
-}
+  );
+};
 
 export default CanvasLayoutWrappedWithProviders;

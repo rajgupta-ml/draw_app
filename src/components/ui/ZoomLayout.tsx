@@ -1,21 +1,12 @@
-import { cn } from '@/lib/utils';
-import type { Shape } from '@/types/canvasTypes';
+import { useCanvasManagerContext } from '@/context/useCanvasManager';
 import { Minus, Plus, Redo, Undo } from 'lucide-react'
 import React, { useEffect, useState} from 'react'
 
 
-interface IZoomLayout  {
-    getScale : () => string;
-    scaleUp : () => void;
-    scaleDown : () => void
-    undoQueue : () => Shape[]
-    redoQueue : () => Shape[]
-    undo : () => void;
-    redo : () => void
-}
-const ZoomLayout = ({scaleDown, scaleUp, getScale, undo, redo} : IZoomLayout) => {
+const ZoomLayout = () => {
+    const {canvasManager} = useCanvasManagerContext();
 
-    
+    const {scaleDown, scaleUp, getScale, undo, redo} = canvasManager
     const [scale, setScale] = useState("100%");
 
     const handleZoomIn = () => {

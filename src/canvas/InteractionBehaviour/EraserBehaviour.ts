@@ -29,7 +29,7 @@ export class EraserBehaviour implements IInteractionBehavior{
         [TOOLS_NAME.TEXT, new Text()]
     ]);
 
-    onMouseDown(context: BehaviorContext): void {
+    onMouseDown(): void {
         this.clicked = true;
         this.shapesToMarkForRemoval.clear();
     }
