@@ -59,6 +59,7 @@ export class CanvasManager {
     this.offScreenCanvasctx = offScreenCanvasctx;
     this.inputArea = inputArea;
     this.roughCanvas = new RoughCanvas(this.offScreenCanvas);
+    this.config.stroke = this.theme === "dark" ? strokeColor.dark[0] : strokeColor.light[0]; 
     this.selectedTool = TOOLS_NAME.RECT;
     this.canvas.style.cursor = "crosshair";
     canvas.focus();
@@ -193,7 +194,7 @@ export class CanvasManager {
     this.shapes.map((shape) => {
       if (shape.config) {
         const themeDefaultStroke =
-        this.theme === "dark" ? strokeColor.dark[0] : strokeColor.light[0]; // Added '!'
+        this.theme === "dark" ? strokeColor.dark[0] : strokeColor.light[0]; 
         if (
           shape.config.stroke === strokeColor.light[0] ||
           shape.config.stroke === strokeColor.dark[0]
