@@ -85,9 +85,14 @@ export class SelectionBehavior implements IInteractionBehavior {
           JSON.stringify(this.selectedShapes),
         );
         requestRedraw();
-        return;
+        if(this.selectedShapes.length > 0){
+          // Write now edit can only be done on single shape not in group
+          window.dispatchEvent(new CustomEvent("selectShape", {detail : {selectedShapes : this.selectedShapes[0] }}))
+        }
+          return;
       }
     }
+
 
     this.selectedShapes = [];
     this.selectionBox = null;
@@ -303,7 +308,7 @@ export class SelectionBehavior implements IInteractionBehavior {
           return p.lineArray.map(([_, py]) => py);
         case TOOLS_NAME.TEXT:{
           const textShape = s as TextShape;
-          const fontSizeStr = textShape.config.font_size || "10";
+          const fontSizeStr = textShape.config.fontSize || "10";
           const fontSize = parseInt(fontSizeStr.replace('px', ''));
           return [textShape.y, textShape.y + fontSize + 5];
         }
@@ -539,11 +544,11 @@ export class SelectionBehavior implements IInteractionBehavior {
           textShape.y = p1.y;
           
           // Scale font size based on both X and Y scaling for better proportions
-          const originalFontSizeStr = iState.config.font_size || "10";
+          const originalFontSizeStr = iState.config.fontSize || "10";
           const originalFontSize = parseInt(originalFontSizeStr.replace('px', ''));
           const scaleFactor = Math.min(scaleX, scaleY); // Use the smaller scale to maintain aspect ratio
           const newFontSize = Math.max(1, Math.round(originalFontSize * scaleFactor));
-          textShape.config.font_size = `${newFontSize}px`;
+          textShape.config.fontSize = `${newFontSize}px`;
 
           // Recalculate width using the new font size
           if (this.ctx) {
@@ -611,7 +616,7 @@ export class SelectionBehavior implements IInteractionBehavior {
         };
       case TOOLS_NAME.TEXT: {
         const text = shape as TextShape;
-        const fontSizeStr = text.config.font_size || "10";
+        const fontSizeStr = text.config.fontSize || "10";
         const fontSize = parseInt(fontSizeStr.replace('px', ''));
         const width = this.ctx ? this.recalculateTextWidth(text) : text.w;
         return {
@@ -731,9 +736,9 @@ export class SelectionBehavior implements IInteractionBehavior {
   }
 
   private recalculateTextWidth(textShape: TextShape): number {
-    const fontSizeStr = textShape.config.font_size || '10';
+    const fontSizeStr = textShape.config.fontSize || '10';
     const fontSize = fontSizeStr.replace('px', '');
-    const fontFamily = textShape.config.font_family || 'Arial';
+    const fontFamily = textShape.config.fontFamily || 'Arial';
     
     // Save current font
     const originalFont = this.ctx!.font;

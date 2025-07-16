@@ -9,10 +9,10 @@ interface IToolbar {
 }
 const Toolbar = ({ setTool, getTool }: IToolbar) => {
   const [state, setState] = useState<TOOLS_NAME>();
-  console.log(state);
   const handleClick = (name: TOOLS_NAME) => {
       setTool(name);
       setState(name);    
+
   };
   return (
     <div className="absolute top-5 left-1/2 -translate-x-1/2">

@@ -1,28 +1,41 @@
 "use clients"
 import React, {  useRef, useEffect, type ReactNode } from 'react';
-import { useConfig } from '@/context/useConfigContext';
+import { useConfig, type TextOptionsPlusGeometricOptions } from '@/context/useConfigContext';
 import useSidebar from '@/context/useSidebar';
 import { GeometricConfig } from './configLayout/GeometricConfigLayout';
 import { TextConfig } from './configLayout/TextConfigLayout';
 import { useTheme } from 'next-themes';
 import { strokeColor } from './configLayout/constant';
+import { useSelectedShape } from '@/context/useSelectedShape';
 
 
 const ConfigLayout = () => {
-    const {config, handleConfigChange} = useConfig();
-    const latestConfig = useRef(config);
+    const {config, handleConfigChange, setConfig} = useConfig();
     const {showSidebar} = useSidebar();
     const {resolvedTheme} = useTheme();
-    useEffect(() => {
-        latestConfig.current = config;
-    }, [config]);
+    const {selectedShape} = useSelectedShape();
 
     useEffect(() => {
         handleConfigChange({...config, stroke : resolvedTheme === "dark" ?  strokeColor.dark[0] : strokeColor.light[0],
         })
     },[resolvedTheme]);
     
+    useEffect(() => {
+        if (selectedShape && selectedShape.config) {
+            setConfig((prevConfig: TextOptionsPlusGeometricOptions) => ({
+                ...prevConfig,
+                ...selectedShape.config,
+            }));
+        }
+    }, [selectedShape]);
 
+
+    useEffect(() => {
+        if(selectedShape && selectedShape.config){
+            selectedShape.config = {...config}
+            window.dispatchEvent(new Event("requestRedraw"))
+        }
+    },[config])
     if (showSidebar === null) return null;
 
     return (

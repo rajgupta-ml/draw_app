@@ -75,6 +75,8 @@ import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext
             let screenX;
             let screenY
             let font_size;
+            let font_family
+            let stroke;
             const input = document.createElement("input");
 
             const canvasRect = canvas.getBoundingClientRect();
@@ -84,19 +86,23 @@ import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext
                 screenX  = rawX - canvasRect.left
                 screenY  = rawY - canvasRect.top
                 font_size = config.fontSize
+                font_family = config.fontFamily
+                stroke = config.stroke
             }else{
                 screenX = (this.textToEdit.x).toString();
                 screenY = (this.textToEdit.y).toString();
-                font_size = `${this.textToEdit.config.font_size}px`
+                font_size = `${this.textToEdit.config.fontSize}px`
+                font_family = this.textToEdit.config.fontFamily
+                stroke = this.textToEdit.config.stroke
             }
             
 
             input.style.position = "absolute";
             input.style.top = `${screenY}px`;
             input.style.left =`${screenX}px`
-            input.style.fontFamily = config.fontFamily
+            input.style.fontFamily = font_family
             input.style.fontSize = font_size
-            input.style.color = this.textToEdit?.config.stroke||config.stroke!
+            input.style.color = stroke!
             input.style.textAlign = config.textAlignment
             input.style.outline = "none";
             input.value = this.textToEdit?.text ?? "Add Text";
@@ -131,8 +137,8 @@ import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext
             const shape = this.shapeRender.createShape(currentPosition);
             shape.text = text;
             
-            const fontSize = this.textToEdit?.config.font_size || parseInt(config.fontSize).toString() || '16';
-            const fontFamily = this.textToEdit?.config.font_family || config.fontFamily || 'Arial';
+            const fontSize = this.textToEdit?.config.fontSize || parseInt(config.fontSize).toString() || '16';
+            const fontFamily = this.textToEdit?.config.fontFamily || config.fontFamily || 'Arial';
             const fontColor = this.textToEdit?.config.stroke || config.stroke!
             
             // Set the font on the context to match what will be rendered
@@ -143,8 +149,8 @@ import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext
             shape.w = Math.floor(textWidth);
             
             // Also ensure the shape has the correct font properties
-            shape.config.font_size = fontSize;
-            shape.config.font_family = fontFamily;
+            shape.config.fontSize = fontSize;
+            shape.config.fontFamily = fontFamily;
             shape.config.stroke = fontColor;
 
 

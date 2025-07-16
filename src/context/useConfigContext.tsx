@@ -1,15 +1,15 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, useState, type Dispatch, type ReactNode } from 'react'
 import type { Options } from 'roughjs/bin/core'
 
 export type TextOptionsPlusGeometricOptions = Options & {
   fontFamily : string,
   fontSize : string,
   textAlignment : string,
-  fontColor : string,
 }
 type ConfigContextType = {
   config: TextOptionsPlusGeometricOptions;
   handleConfigChange: (config : TextOptionsPlusGeometricOptions) => void;
+  setConfig : React.Dispatch<React.SetStateAction<TextOptionsPlusGeometricOptions>>;
 };
 
 const ConfigContext = createContext<ConfigContextType | null>(null);
@@ -45,15 +45,14 @@ export const ConfigContextProvider = ({ children }: { children: ReactNode }) => 
     fontFamily : "Arial",
     fontSize : "12px",
     textAlignment : "left",
-    fontColor : "",
 });
   const handleConfigChange = (config : TextOptionsPlusGeometricOptions) => {
     setConfig(config);
     window.dispatchEvent(new CustomEvent("configChange", {detail : {config}}))
   }
-
+  
   return (
-    <ConfigContext.Provider value={{ config, handleConfigChange }}>
+    <ConfigContext.Provider value={{ config, handleConfigChange, setConfig }}>
       {children}
     </ConfigContext.Provider>
   );

@@ -3,9 +3,16 @@ import { IShapeRenders } from "./baseClass";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import { TOOLS_NAME } from "@/types/toolsTypes";
 import { shapeConfig } from "@/constants/canvasConstant";
+import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext";
 
 export class Text extends IShapeRenders<TextShape>{
     createShape(currentPosition: currentPositionType) : TextShape {
+        const config : TextOptionsPlusGeometricOptions = {
+            fontFamily : "Arial",
+            fontSize : "16px",
+            stroke : shapeConfig.stroke,
+            textAlignment : "left",
+        } 
         const newShape : TextShape = {
             id : crypto.randomUUID(),
             type : TOOLS_NAME.TEXT,
@@ -13,23 +20,18 @@ export class Text extends IShapeRenders<TextShape>{
             x : currentPosition.startX,
             y : currentPosition.startY,
             w : 0,
-            config : {
-                font_family : "Arial",
-                font_size : "16px",
-                font_weight : "400",
-                stroke : shapeConfig.stroke,
-            }
+            config 
         }
         return newShape
     }
     render(existingShape: TextShape, canvas: RoughCanvas, ctx: CanvasRenderingContext2D): void {
-        ctx.font = `${existingShape.config.font_size}px ${existingShape.config.font_family}`
-        ctx.fillStyle = existingShape.config.stroke
+        ctx.font = `${existingShape.config.fontSize}px ${existingShape.config.fontFamily}`
+        ctx.fillStyle = existingShape.config.stroke!
         ctx.textBaseline = "top"; 
         ctx.fillText(existingShape.text, existingShape.x , existingShape.y);
     }
     isPointInShape(shape : TextShape, px : number, py : number) {
-        const fontSize = parseInt(shape.config.font_size.replace('px', ''));       
+        const fontSize = parseInt(shape.config.fontSize.replace('px', ''));       
       
         const left = shape.x ;
         const top = shape.y;

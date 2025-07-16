@@ -52,6 +52,7 @@ export class CanvasManager {
     this.canvas.addEventListener("keydown", this.handleKeyPress);
     window.addEventListener("theme-change", this.handleThemeChange)
     window.addEventListener("configChange", this.handlefetchConfig);
+    window.addEventListener("requestRedraw", this.requestRedraw) 
   
   };
 
@@ -63,13 +64,17 @@ export class CanvasManager {
     this.canvas.removeEventListener("keydown", this.handleKeyPress);
     window.removeEventListener("theme-change", this.handleThemeChange)
     window.removeEventListener("configChange", this.handlefetchConfig);
+    window.removeEventListener("requestRedraw", this.requestRedraw) 
+
 
 
   };
 
 
+  private requestRedraw =(event : Event) => {
+    this.drawCanvas({isScrolling : false});
+  }
   
-
   private handlefetchConfig =(event : Event) => {
     this.config = ((event as CustomEvent).detail.config) as TextOptionsPlusGeometricOptions 
   }
@@ -140,7 +145,6 @@ export class CanvasManager {
 
   // Draw and render on canvas method
   drawCanvas = ({ isScrolling }: { isScrolling: boolean }) => {
-    window.dispatchEvent(new Event("get-config-data"))
     const targetCtx = this.offScreenCanvasctx;
     const targetRoughCanvas = this.roughCanvas
     targetCtx.save();

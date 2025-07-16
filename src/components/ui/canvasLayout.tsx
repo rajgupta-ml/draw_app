@@ -9,6 +9,7 @@ import InputLayout from "./inputLayout";
 import ConfigLayout from "./configLayout";
 import ConfigContextProvider, { useConfig } from "@/context/useConfigContext";
 import { SidebarContextProvider } from "@/context/useSidebar";
+import { SelectedShapeProvider } from "@/context/useSelectedShape";
 
 const CanvasLayout = () => {
   const { width = 800, height = 600 } = useWindowDimension(); 
@@ -73,9 +74,7 @@ const CanvasLayout = () => {
             undo = {canvasManager.undo}
             redo = {canvasManager.redo}
           />
-        <ConfigContextProvider>
           <ConfigLayout></ConfigLayout>
-        </ConfigContextProvider>
         </>
       )}
       </div>
@@ -90,7 +89,9 @@ const CanvasLayout = () => {
 
     <SidebarContextProvider>
       <ConfigContextProvider>
-        <CanvasLayout></CanvasLayout>
+        <SelectedShapeProvider>
+          <CanvasLayout></CanvasLayout>
+        </SelectedShapeProvider>
       </ConfigContextProvider>
     </SidebarContextProvider>
   )

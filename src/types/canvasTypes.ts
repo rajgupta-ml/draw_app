@@ -1,9 +1,10 @@
+import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext";
 import type { TOOLS_NAME } from "./toolsTypes";
 
 interface IBase {
   id?: string;
   type: TOOLS_NAME;
-  config?: Record<string, string>;
+  config: TextOptionsPlusGeometricOptions;
 }
 
 export type currentPositionType = {
@@ -61,12 +62,6 @@ export interface TextShape extends IBase {
   y : number;
   w : number;
   text : string,
-  config : {
-    "font_size" : string;
-    "font_weight" : string;
-    "font_family" : string;
-    "stroke" : string;
-  }
 }
 export type Shape =
   | RectShape
