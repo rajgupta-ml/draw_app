@@ -74,7 +74,7 @@ export class EraserBehaviour implements IInteractionBehavior {
         let newShape: Shape | null;
         if (config) {
           const newConfig: TextOptionsPlusGeometricOptions = {
-            ...config,
+            ...shape.config,
             ...eraserShapeConfig,
           };
           newShape = {
