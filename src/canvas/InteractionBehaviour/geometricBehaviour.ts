@@ -36,7 +36,7 @@ export class GeometricBehaviour<T extends GeometricShape>
     this.currentPosition.endY = y;
   }
   onMouseMove({ x, y, manager }: BehaviorContext): void {
-    const {drawCanvas} = manager
+    const { drawCanvas } = manager;
     if (this.clicked && this.shapeRenders) {
       this.currentPosition.endX = x;
       this.currentPosition.endY = y;
@@ -45,33 +45,34 @@ export class GeometricBehaviour<T extends GeometricShape>
     }
   }
   onMouseUp({ executeCanvasCommnad, manager }: BehaviorContext): void {
-    const {drawCanvas } = manager
+    const { drawCanvas } = manager;
     this.clicked = false;
     if (this.dragged && this.shapeRenders) {
       const newShape = this.shapeRenders.createShape(this.currentPosition);
       const config = manager.config;
-      const newShapeWithConfig = {...newShape, config}
-      executeCanvasCommnad(new AddShapeCommand(manager, newShapeWithConfig))
+      const newShapeWithConfig = { ...newShape, config };
+      executeCanvasCommnad(new AddShapeCommand(manager, newShapeWithConfig));
       drawCanvas();
     }
     this.dragged = false;
   }
-  renderShapes(
-    manager : CanvasManager,
-    shape: T,
-  ): void {
-    const {roughCanvas, offScreenCanvasctx} = manager
+  renderShapes(manager: CanvasManager, shape: T): void {
+    const { roughCanvas, offScreenCanvasctx } = manager;
     if (this.shapeRenders) {
       this.shapeRenders.render(shape, roughCanvas, offScreenCanvasctx);
     }
   }
-  previewShape(manager : CanvasManager, config : Options): void {
-    const {roughCanvas, offScreenCanvasctx} = manager
+  previewShape(manager: CanvasManager, config: Options): void {
+    const { roughCanvas, offScreenCanvasctx } = manager;
 
     if (this.shapeRenders && this.dragged) {
       const shape = this.shapeRenders.createShape(this.currentPosition);
-      const newShapeWithConfig = {...shape, config}
-      this.shapeRenders.render(newShapeWithConfig, roughCanvas, offScreenCanvasctx);
+      const newShapeWithConfig = { ...shape, config };
+      this.shapeRenders.render(
+        newShapeWithConfig,
+        roughCanvas,
+        offScreenCanvasctx,
+      );
     }
   }
   getShapeRenderer(): IShapeRenders<T> {

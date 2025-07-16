@@ -18,8 +18,8 @@ export class PenBehavior implements IInteractionBehavior {
     this.clicked = true;
     this.currentPath = [[x, y]];
   }
-  onMouseMove({ x, y, manager}: BehaviorContext): void {
-    const {drawCanvas} = manager
+  onMouseMove({ x, y, manager }: BehaviorContext): void {
+    const { drawCanvas } = manager;
     if (this.clicked && this.shapeRenders) {
       this.currentPath.push([x, y]);
       drawCanvas();
@@ -27,39 +27,49 @@ export class PenBehavior implements IInteractionBehavior {
     }
   }
   onMouseUp({ manager, executeCanvasCommnad }: BehaviorContext): void {
-    const {config, drawCanvas} = manager
+    const { config, drawCanvas } = manager;
     this.clicked = false;
     if (this.dragged && this.shapeRenders && this.currentPath.length > 1) {
       const newShape: PenShape = {
         type: TOOLS_NAME.PEN,
         lineArray: [...this.currentPath],
-        config : (config as TextOptionsPlusGeometricOptions) 
+        config: config,
       };
-      executeCanvasCommnad(new AddShapeCommand(manager, newShape))
+      executeCanvasCommnad(new AddShapeCommand(manager, newShape));
       drawCanvas();
       this.currentPath = [];
     }
     this.dragged = false;
   }
-  renderShapes(manager : CanvasManager ,shape: PenShape,
-  ): void {
-    const {roughCanvas, offScreenCanvasctx} = manager
+  renderShapes(manager: CanvasManager, shape: PenShape): void {
+    const { roughCanvas, offScreenCanvasctx } = manager;
     if (this.shapeRenders) {
       this.shapeRenders.render(
-        { type: TOOLS_NAME.PEN, lineArray: shape.lineArray, config : shape.config  },
+        {
+          type: TOOLS_NAME.PEN,
+          lineArray: shape.lineArray,
+          config: shape.config,
+        },
         roughCanvas,
-        offScreenCanvasctx
+        offScreenCanvasctx,
       );
     }
   }
 
-  previewShape(manager : CanvasManager, config : TextOptionsPlusGeometricOptions): void {
-    const {roughCanvas, offScreenCanvasctx} = manager
+  previewShape(
+    manager: CanvasManager,
+    config: TextOptionsPlusGeometricOptions,
+  ): void {
+    const { roughCanvas, offScreenCanvasctx } = manager;
     if (this.shapeRenders && this.dragged && this.currentPath.length > 1) {
       this.shapeRenders.render(
-        { type: TOOLS_NAME.PEN, lineArray: this.currentPath, config : (config as TextOptionsPlusGeometricOptions)},
+        {
+          type: TOOLS_NAME.PEN,
+          lineArray: this.currentPath,
+          config: config,
+        },
         roughCanvas,
-        offScreenCanvasctx
+        offScreenCanvasctx,
       );
     }
   }

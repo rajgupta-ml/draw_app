@@ -1,13 +1,12 @@
 import type { currentPositionType, RectShape } from "@/types/canvasTypes";
 import { IShapeRenders } from "./baseClass";
 import type { RoughCanvas } from "roughjs/bin/canvas";
-import { shapeConfig } from "@/constants/canvasConstant";
+import { DEFAULT_CONFIG, shapeConfig } from "@/constants/canvasConstant";
 import { TOOLS_NAME } from "@/types/toolsTypes";
 import type { Options } from "roughjs/bin/core";
 export class Rectangle extends IShapeRenders<RectShape> {
   render = (existingShape: RectShape, canvas: RoughCanvas) => {
-
-    const config = (existingShape.config ?? shapeConfig) as Options
+    const config = (existingShape.config ?? shapeConfig) as Options;
     canvas.rectangle(
       existingShape.x,
       existingShape.y,
@@ -22,7 +21,7 @@ export class Rectangle extends IShapeRenders<RectShape> {
     const y = Math.min(currentPosition.startY, currentPosition.endY);
     const w = Math.abs(currentPosition.startX - currentPosition.endX);
     const h = Math.abs(currentPosition.startY - currentPosition.endY);
-    return { type: TOOLS_NAME.RECT, x, y, w, h };
+    return { type: TOOLS_NAME.RECT, x, y, w, h, config: DEFAULT_CONFIG };
   };
   isPointInShape(shape: RectShape, px: number, py: number): boolean {
     const topLeftX = shape.x;

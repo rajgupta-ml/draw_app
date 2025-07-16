@@ -1,7 +1,13 @@
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
-import { CanvasManager } from '@/manager/CanvasManager'; 
-import useSidebar from '@/context/useSidebar'; 
-import { useConfig } from "@/context/useConfigContext"; 
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
+import { CanvasManager } from "@/manager/CanvasManager";
+import useSidebar from "@/context/useSidebar";
+import { useConfig } from "@/context/useConfigContext";
 
 interface CanvasManagerContextType {
   canvasManager: CanvasManager | null;
@@ -12,22 +18,30 @@ interface CanvasManagerContextType {
   inputAreaRef: React.RefObject<HTMLDivElement | null>;
 }
 
-const CanvasManagerContext = createContext<CanvasManagerContextType | undefined>(undefined);
+const CanvasManagerContext = createContext<
+  CanvasManagerContextType | undefined
+>(undefined);
 
 export const useCanvasManagerContext = () => {
   const context = useContext(CanvasManagerContext);
-  if (context === undefined ) {
-    throw new Error('useCanvasManagerContext must be used within a CanvasManagerProvider');
+  if (context === undefined) {
+    throw new Error(
+      "useCanvasManagerContext must be used within a CanvasManagerProvider",
+    );
   }
 
-  return context as Omit<CanvasManagerContextType, 'canvasManager'> & { canvasManager: CanvasManager };
+  return context as Omit<CanvasManagerContextType, "canvasManager"> & {
+    canvasManager: CanvasManager;
+  };
 };
 
 interface CanvasManagerProviderProps {
   children: React.ReactNode;
 }
 
-export const CanvasManagerProvider: React.FC<CanvasManagerProviderProps> = ({ children }) => {
+export const CanvasManagerProvider: React.FC<CanvasManagerProviderProps> = ({
+  children,
+}) => {
   const [isLoading, setIsLoading] = useState(true);
   const canvasManager = useRef<CanvasManager | null>(null);
   const [error, setError] = useState<Error | null>(null);
@@ -37,7 +51,7 @@ export const CanvasManagerProvider: React.FC<CanvasManagerProviderProps> = ({ ch
   const inputAreaRef = useRef<HTMLDivElement>(null);
 
   const { toggleSidebar } = useSidebar();
-  const { config } = useConfig(); 
+  const { config } = useConfig();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -45,7 +59,9 @@ export const CanvasManagerProvider: React.FC<CanvasManagerProviderProps> = ({ ch
     const inputArea = inputAreaRef.current;
 
     if (!canvas || !offscreenCanvas || !inputArea) {
-      console.log("Canvas or input area ref is null, delaying CanvasManager initialization.");
+      console.log(
+        "Canvas or input area ref is null, delaying CanvasManager initialization.",
+      );
       return;
     }
 
@@ -59,29 +75,41 @@ export const CanvasManagerProvider: React.FC<CanvasManagerProviderProps> = ({ ch
 
     try {
       if (canvasManager.current === null) {
-        const manager = new CanvasManager(canvas, ctx, offscreenCanvas, offscreenCanvasCtx, inputArea, config, toggleSidebar);
+        const manager = new CanvasManager(
+          canvas,
+          ctx,
+          offscreenCanvas,
+          offscreenCanvasCtx,
+          inputArea,
+          config,
+          toggleSidebar,
+        );
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         offscreenCanvas.width = window.innerWidth;
-        offscreenCanvas.height = window.innerHeight
+        offscreenCanvas.height = window.innerHeight;
         manager.addEventListeners();
-        manager.drawCanvas(); 
+        manager.drawCanvas();
         canvasManager.current = manager;
         setIsLoading(false);
       }
     } catch (e) {
-      setError(e instanceof Error ? e : new Error("Unknown error initializing CanvasManager."));
+      setError(
+        e instanceof Error
+          ? e
+          : new Error("Unknown error initializing CanvasManager."),
+      );
       setIsLoading(false);
     }
 
     return () => {
-      if (canvasManager.current) { 
+      if (canvasManager.current) {
         canvasManager.current.destroyEventListeners();
         canvasManager.current = null;
       }
       setIsLoading(true);
     };
-  }, []); // Empty dependency array - only run once
+  }, []);
 
   const contextValue = {
     canvasManager: canvasManager.current,

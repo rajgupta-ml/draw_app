@@ -53,15 +53,14 @@ export type PenArrayShape = [number, number];
 export interface PenShape extends IBase {
   type: TOOLS_NAME.PEN;
   lineArray: PenArrayShape[];
-};
-
+}
 
 export interface TextShape extends IBase {
-  type : TOOLS_NAME.TEXT,
-  x : number;
-  y : number;
-  w : number;
-  text : string,
+  type: TOOLS_NAME.TEXT;
+  x: number;
+  y: number;
+  w: number;
+  text: string;
 }
 export type Shape =
   | RectShape

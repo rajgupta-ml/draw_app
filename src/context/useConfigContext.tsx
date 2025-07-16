@@ -1,56 +1,35 @@
-import { createContext, useContext, useState, type Dispatch, type ReactNode } from 'react'
-import type { Options } from 'roughjs/bin/core'
+import { DEFAULT_CONFIG } from "@/constants/canvasConstant";
+import { createContext, useContext, useState, type ReactNode } from "react";
+import type { Options } from "roughjs/bin/core";
 
 export type TextOptionsPlusGeometricOptions = Options & {
-  fontFamily : string,
-  fontSize : string,
-  textAlignment : string,
-}
+  fontFamily: string;
+  fontSize: string;
+  textAlignment: string;
+};
 type ConfigContextType = {
   config: TextOptionsPlusGeometricOptions;
-  handleConfigChange: (config : TextOptionsPlusGeometricOptions) => void;
-  setConfig : React.Dispatch<React.SetStateAction<TextOptionsPlusGeometricOptions>>;
+  handleConfigChange: (config: TextOptionsPlusGeometricOptions) => void;
+  setConfig: React.Dispatch<
+    React.SetStateAction<TextOptionsPlusGeometricOptions>
+  >;
 };
 
 const ConfigContext = createContext<ConfigContextType | null>(null);
-export const ConfigContextProvider = ({ children }: { children: ReactNode }) => {
-  const [config, setConfig] = useState<TextOptionsPlusGeometricOptions>({
-    maxRandomnessOffset: 2,
-    roughness: 0, 
-    bowing: 1,
-    stroke: '#000000', 
-    strokeWidth: 1, 
-    curveFitting: 0.95,
-    curveTightness: 0,
-    curveStepCount: 9,
-    fill: 'transparent', 
-    fillStyle: 'hachure', 
-    fillWeight: 0.5,
-    hachureAngle: -45,
-    hachureGap: 8,
-    simplification: 0,
-    dashOffset: 0,
-    dashGap: 0,
-    zigzagOffset: 0,
-    seed: 0, 
-    strokeLineDash: [], 
-    strokeLineDashOffset: 0,
-    fillLineDash: [],
-    fillLineDashOffset: 0,
-    disableMultiStroke: false,
-    disableMultiStrokeFill: false,
-    preserveVertices: false,
-    fixedDecimalPlaceDigits: 2,
-    fillShapeRoughnessGain: 1,
-    fontFamily : "Arial",
-    fontSize : "12px",
-    textAlignment : "left",
-});
-  const handleConfigChange = (config : TextOptionsPlusGeometricOptions) => {
+export const ConfigContextProvider = ({
+  children,
+}: {
+  children: ReactNode;
+}) => {
+  const [config, setConfig] =
+    useState<TextOptionsPlusGeometricOptions>(DEFAULT_CONFIG);
+  const handleConfigChange = (config: TextOptionsPlusGeometricOptions) => {
     setConfig(config);
-    window.dispatchEvent(new CustomEvent("configChange", {detail : {config}}))
-  }
-  
+    window.dispatchEvent(
+      new CustomEvent("configChange", { detail: { config } }),
+    );
+  };
+
   return (
     <ConfigContext.Provider value={{ config, handleConfigChange, setConfig }}>
       {children}
@@ -61,7 +40,7 @@ export const ConfigContextProvider = ({ children }: { children: ReactNode }) => 
 export const useConfig = () => {
   const context = useContext(ConfigContext);
   if (context === undefined || context === null) {
-      throw new Error('useConfig must be used within a ConfigContextProvider');
+    throw new Error("useConfig must be used within a ConfigContextProvider");
   }
   return context;
 };

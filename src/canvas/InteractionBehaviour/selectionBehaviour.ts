@@ -41,7 +41,7 @@ export class SelectionBehavior implements IInteractionBehavior {
   } | null = null;
   private resizeHandles: ResizeHandle[] = [];
   private clickedResizeHandle: ResizeHandlePosition | null = null;
-  private ctx : CanvasRenderingContext2D | null = null;
+  private ctx: CanvasRenderingContext2D | null = null;
   private initialMousePosition = { x: 0, y: 0 };
   private initialShapesState: Shape[] = [];
   private selectionArea: {
@@ -51,13 +51,8 @@ export class SelectionBehavior implements IInteractionBehavior {
     y2: number;
   } | null = null;
 
-  onMouseDown({ 
-    x,
-    y,
-    isPointInShape,
-    manager
-  }: BehaviorContext): void {
-    const {offScreenCanvasctx, shapes, drawCanvas} = manager
+  onMouseDown({ x, y, isPointInShape, manager }: BehaviorContext): void {
+    const { offScreenCanvasctx, shapes, drawCanvas } = manager;
     this.ctx = offScreenCanvasctx;
     this.initialMousePosition = { x, y };
 
@@ -65,13 +60,17 @@ export class SelectionBehavior implements IInteractionBehavior {
     if (handle) {
       this.currentAction = "RESIZING";
       this.clickedResizeHandle = handle.position;
-      this.initialShapesState = JSON.parse(JSON.stringify(this.selectedShapes));
+      this.initialShapesState = JSON.parse(
+        JSON.stringify(this.selectedShapes),
+      ) as Shape[];
       return;
     }
 
     if (this.selectionBox && this.isPointInBox(x, y, this.selectionBox)) {
       this.currentAction = "MOVING";
-      this.initialShapesState = JSON.parse(JSON.stringify(this.selectedShapes));
+      this.initialShapesState = JSON.parse(
+        JSON.stringify(this.selectedShapes),
+      ) as Shape[];
       return;
     }
 
@@ -83,18 +82,19 @@ export class SelectionBehavior implements IInteractionBehavior {
         this.currentAction = "MOVING";
         this.initialShapesState = JSON.parse(
           JSON.stringify(this.selectedShapes),
-        );
+        ) as Shape[];
         drawCanvas();
-        if(this.selectedShapes.length > 0){
-         
-
+        if (this.selectedShapes.length > 0) {
           // Write now edit can only be done on single shape not in group
-          window.dispatchEvent(new CustomEvent("selectShape", {detail : {selectedShapes : this.selectedShapes[0] }}))
+          window.dispatchEvent(
+            new CustomEvent("selectShape", {
+              detail: { selectedShapes: this.selectedShapes[0] },
+            }),
+          );
         }
         return;
       }
     }
-
 
     this.selectedShapes = [];
     this.selectionBox = null;
@@ -104,13 +104,8 @@ export class SelectionBehavior implements IInteractionBehavior {
     drawCanvas();
   }
 
-  onMouseMove({
-    x,
-    y,
-    isPointInShape,
-    manager
-  }: BehaviorContext): void {
-    const {offScreenCanvasctx, canvas, shapes, drawCanvas} = manager
+  onMouseMove({ x, y, isPointInShape, manager }: BehaviorContext): void {
+    const { offScreenCanvasctx, canvas, shapes, drawCanvas } = manager;
     this.ctx = offScreenCanvasctx;
     const dx = x - this.initialMousePosition.x;
     const dy = y - this.initialMousePosition.y;
@@ -210,16 +205,18 @@ export class SelectionBehavior implements IInteractionBehavior {
     }
   }
 
-  onMouseUp({manager}: BehaviorContext): void {
- 
-    const {offScreenCanvasctx, shapes,drawCanvas } = manager
+  onMouseUp({ manager }: BehaviorContext): void {
+    const { offScreenCanvasctx, shapes, drawCanvas } = manager;
     this.ctx = offScreenCanvasctx;
     if (this.currentAction === "SELECTING_AREA" && this.selectionArea) {
       this.selectShapesInArea(shapes);
-      if(this.selectedShapes.length > 0){
-        window.dispatchEvent(new CustomEvent("selectShape", {detail : {selectedShapes : this.selectedShapes[0] }}))
+      if (this.selectedShapes.length > 0) {
+        window.dispatchEvent(
+          new CustomEvent("selectShape", {
+            detail: { selectedShapes: this.selectedShapes[0] },
+          }),
+        );
       }
-
     }
     this.currentAction = "IDLE";
     this.clickedResizeHandle = null;
@@ -228,8 +225,8 @@ export class SelectionBehavior implements IInteractionBehavior {
     drawCanvas();
   }
 
-  previewShape(manager : CanvasManager): void {
-    const {offScreenCanvasctx, roughCanvas} = manager
+  previewShape(manager: CanvasManager): void {
+    const { offScreenCanvasctx, roughCanvas } = manager;
     this.ctx = offScreenCanvasctx;
     if (this.selectionBox) {
       roughCanvas.rectangle(
@@ -259,7 +256,6 @@ export class SelectionBehavior implements IInteractionBehavior {
     }
   }
 
-
   private updateSelectionBox(): void {
     if (this.selectedShapes.length === 0) {
       this.selectionBox = null;
@@ -283,12 +279,14 @@ export class SelectionBehavior implements IInteractionBehavior {
           return [(s as RightArrowShape).startX, (s as RightArrowShape).endX];
         case TOOLS_NAME.PEN:
           return (s as PenShape).lineArray.map(([px, _]) => px);
-          case TOOLS_NAME.TEXT: {
-            const textShape = s as TextShape;
-            // Use recalculateTextWidth if possible, otherwise fallback to textShape.w
-            const width = this.ctx ? this.recalculateTextWidth(textShape) : textShape.w;
-            return [textShape.x, textShape.x + width];  
-          }
+        case TOOLS_NAME.TEXT: {
+          const textShape = s as TextShape;
+          // Use recalculateTextWidth if possible, otherwise fallback to textShape.w
+          const width = this.ctx
+            ? this.recalculateTextWidth(textShape)
+            : textShape.w;
+          return [textShape.x, textShape.x + width];
+        }
         default:
           return [];
       }
@@ -313,10 +311,10 @@ export class SelectionBehavior implements IInteractionBehavior {
         case TOOLS_NAME.PEN:
           const p = s as PenShape;
           return p.lineArray.map(([_, py]) => py);
-        case TOOLS_NAME.TEXT:{
+        case TOOLS_NAME.TEXT: {
           const textShape = s as TextShape;
           const fontSizeStr = textShape.config.fontSize || "10";
-          const fontSize = parseInt(fontSizeStr.replace('px', ''));
+          const fontSize = parseInt(fontSizeStr.replace("px", ""));
           return [textShape.y, textShape.y + fontSize + 5];
         }
         default:
@@ -371,7 +369,6 @@ export class SelectionBehavior implements IInteractionBehavior {
             initialState as PenShape
           ).lineArray.map(([px, py]) => [px + dx, py + dy]);
           break;
-        
       }
     });
     this.updateSelectionBox();
@@ -408,8 +405,6 @@ export class SelectionBehavior implements IInteractionBehavior {
 
     const handle = this.clickedResizeHandle;
 
-    let newX = initialBox.x;
-    let newY = initialBox.y;
     let newWidth = initialBox.width;
     let newHeight = initialBox.height;
 
@@ -418,18 +413,14 @@ export class SelectionBehavior implements IInteractionBehavior {
       case "topLeft":
         newWidth = initialBox.width - dx;
         newHeight = initialBox.height - dy;
-        newX =initialBox.x + dx;
-        newY = initialBox.y + dy;
         break;
       case "topRight":
         newWidth = initialBox.width + dx;
         newHeight = initialBox.height - dy;
-        newY = initialBox.y + dy;
         break;
       case "bottomLeft":
         newWidth = initialBox.width - dx;
         newHeight = initialBox.height + dy;
-        newX = initialBox.x + dx;
         break;
       case "bottomRight":
         newWidth = initialBox.width + dx;
@@ -437,14 +428,12 @@ export class SelectionBehavior implements IInteractionBehavior {
         break;
       case "top":
         newHeight = initialBox.height - dy;
-        newY = initialBox.y + dy;
         break;
       case "bottom":
         newHeight = initialBox.height + dy;
         break;
       case "left":
         newWidth = initialBox.width - dx;
-        newX = initialBox.x + dx;
         break;
       case "right":
         newWidth = initialBox.width + dx;
@@ -453,11 +442,9 @@ export class SelectionBehavior implements IInteractionBehavior {
 
     // Prevent negative width/height
     if (newWidth < 0) {
-      newX = initialBox.maxX;
       newWidth = Math.abs(newWidth);
     }
     if (newHeight < 0) {
-      newY = initialBox.maxY;
       newHeight = Math.abs(newHeight);
     }
 
@@ -544,17 +531,22 @@ export class SelectionBehavior implements IInteractionBehavior {
         case TOOLS_NAME.TEXT: {
           const iState = initialState as TextShape;
           const textShape = shape as TextShape;
-          
+
           // Transform position
           const p1 = transform(iState.x, iState.y);
           textShape.x = p1.x;
           textShape.y = p1.y;
-          
+
           // Scale font size based on both X and Y scaling for better proportions
           const originalFontSizeStr = iState.config.fontSize || "10";
-          const originalFontSize = parseInt(originalFontSizeStr.replace('px', ''));
+          const originalFontSize = parseInt(
+            originalFontSizeStr.replace("px", ""),
+          );
           const scaleFactor = Math.min(scaleX, scaleY); // Use the smaller scale to maintain aspect ratio
-          const newFontSize = Math.max(1, Math.round(originalFontSize * scaleFactor));
+          const newFontSize = Math.max(
+            1,
+            Math.round(originalFontSize * scaleFactor),
+          );
           textShape.config.fontSize = `${newFontSize}px`;
 
           // Recalculate width using the new font size
@@ -563,10 +555,9 @@ export class SelectionBehavior implements IInteractionBehavior {
           } else {
             textShape.w = Math.round(iState.w * scaleX);
           }
-          
+
           break;
         }
-        
       }
     });
     this.updateSelectionBox();
@@ -624,14 +615,14 @@ export class SelectionBehavior implements IInteractionBehavior {
       case TOOLS_NAME.TEXT: {
         const text = shape as TextShape;
         const fontSizeStr = text.config.fontSize || "10";
-        const fontSize = parseInt(fontSizeStr.replace('px', ''));
+        const fontSize = parseInt(fontSizeStr.replace("px", ""));
         const width = this.ctx ? this.recalculateTextWidth(text) : text.w;
         return {
           allX: [text.x, text.x + width],
           allY: [text.y, text.y + fontSize + 5], // crude height estimate
         };
       }
-        
+
       default:
         return { allX: [], allY: [] };
     }
@@ -703,8 +694,7 @@ export class SelectionBehavior implements IInteractionBehavior {
   }
   private getClickedResizeHandle(x: number, y: number): ResizeHandle | null {
     return (
-      this.resizeHandles.find((handle) => this.isPointInBox(x, y, handle)) ||
-      null
+      this.resizeHandles.find((handle) => this.isPointInBox(x, y, handle)) ?? null
     );
   }
   private selectShapesInArea(allShapes: Shape[]): void {
@@ -744,20 +734,20 @@ export class SelectionBehavior implements IInteractionBehavior {
   }
 
   private recalculateTextWidth(textShape: TextShape): number {
-    const fontSizeStr = textShape.config.fontSize || '10';
-    const fontSize = fontSizeStr.replace('px', '');
-    const fontFamily = textShape.config.fontFamily || 'Arial';
-    
+    const fontSizeStr = textShape.config.fontSize || "10";
+    const fontSize = fontSizeStr.replace("px", "");
+    const fontFamily = textShape.config.fontFamily || "Arial";
+
     // Save current font
     const originalFont = this.ctx!.font;
-    
+
     // Set font and measure
     this.ctx!.font = `${fontSize}px ${fontFamily}`;
-    const width = this.ctx!.measureText(textShape.text || '').width;
-    
+    const width = this.ctx!.measureText(textShape.text || "").width;
+
     // Restore original font
     this.ctx!.font = originalFont;
-    
+
     return Math.floor(width);
   }
 }

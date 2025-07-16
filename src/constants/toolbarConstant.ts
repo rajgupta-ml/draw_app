@@ -54,13 +54,13 @@ export const ToolComponent: ITools[] = [
     number: 8,
   },
   {
-    name : TOOLS_NAME.ERASER,
-    Component : Eraser,
-    number : 9,
+    name: TOOLS_NAME.ERASER,
+    Component: Eraser,
+    number: 9,
   },
   {
-    name : TOOLS_NAME.TEXT,
-    Component : Type,
-    number : 10,
-  }
+    name: TOOLS_NAME.TEXT,
+    Component: Type,
+    number: 10,
+  },
 ];

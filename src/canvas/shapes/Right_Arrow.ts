@@ -2,7 +2,8 @@ import type { RoughCanvas } from "roughjs/bin/canvas";
 import { IShapeRenders } from "./baseClass";
 import type { currentPositionType, RightArrowShape } from "@/types/canvasTypes";
 import { TOOLS_NAME } from "@/types/toolsTypes";
-import { shapeConfig } from "@/constants/canvasConstant";
+import { DEFAULT_CONFIG, shapeConfig } from "@/constants/canvasConstant";
+import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext";
 
 export class RightArrow extends IShapeRenders<RightArrowShape> {
   createShape(currentPosition: currentPositionType): RightArrowShape {
@@ -12,20 +13,21 @@ export class RightArrow extends IShapeRenders<RightArrowShape> {
       startY: currentPosition.startY,
       endX: currentPosition.endX,
       endY: currentPosition.endY,
+      config: DEFAULT_CONFIG,
     };
   }
 
   render(existingShape: RightArrowShape, canvas: RoughCanvas): void {
     const { startX, startY, endX, endY, config } = existingShape;
-    const configValue = config ?? shapeConfig 
+    const configValue = config ?? shapeConfig;
     // Calculate vector properties
     const dx = endX - startX;
     const dy = endY - startY;
     const length = Math.sqrt(dx * dx + dy * dy);
     const angle = Math.atan2(dy, dx); // Angle in radians
 
-    const arrowheadLength = (Number(config?.arrowheadLength) || 20) as number;
-    const arrowheadWidth = (Number(config?.arrowheadWidth) || 20) as number;
+    const arrowheadLength = 20;
+    const arrowheadWidth = 20;
 
     let effectiveShaftLength = length - arrowheadLength;
 
@@ -77,7 +79,7 @@ export class RightArrow extends IShapeRenders<RightArrowShape> {
     arrowheadLength: number,
     arrowheadWidth: number,
     angle: number,
-    options?: any,
+    options: TextOptionsPlusGeometricOptions,
   ): void {
     // Calculate the end point of the shaft (where the arrowhead begins)
     const shaftEndX = startX + shaftLength * Math.cos(angle);

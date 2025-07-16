@@ -1,6 +1,6 @@
 "use client";
 import { useWindowDimension } from "@/hooks/useWindowDimension";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import Toolbar from "./Toolbar";
 import ZoomLayout from "./ZoomLayout";
 import { Loader } from "lucide-react";
@@ -9,29 +9,45 @@ import ConfigLayout from "./configLayout";
 import ConfigContextProvider from "@/context/useConfigContext";
 import { SidebarContextProvider } from "@/context/useSidebar";
 import { SelectedShapeProvider } from "@/context/useSelectedShape";
-import { CanvasManagerProvider, useCanvasManagerContext } from "@/context/useCanvasManager";
+import {
+  CanvasManagerProvider,
+  useCanvasManagerContext,
+} from "@/context/useCanvasManager";
 
 const CanvasLayout = () => {
   const { width, height } = useWindowDimension();
-  const { canvasManager, canvasRef, inputAreaRef, offscreenCanvasRef, error, isLoading } = useCanvasManagerContext();
+  const {
+    canvasManager,
+    canvasRef,
+    inputAreaRef,
+    offscreenCanvasRef,
+    error,
+    isLoading,
+  } = useCanvasManagerContext();
 
   useEffect(() => {
-    if (canvasManager && canvasRef.current && offscreenCanvasRef.current && width && height) {
+    if (
+      canvasManager &&
+      canvasRef.current &&
+      offscreenCanvasRef.current &&
+      width &&
+      height
+    ) {
       canvasRef.current.width = width;
       canvasRef.current.height = height;
       offscreenCanvasRef.current.width = width;
       offscreenCanvasRef.current.height = height;
-      
+
       canvasManager.setMaxScroll();
       canvasManager.drawCanvas();
     }
-  }, [width, height, canvasManager]);
+  }, [width, height, canvasManager, canvasRef, offscreenCanvasRef]);
 
   useEffect(() => {
     if (canvasManager && canvasRef.current) {
       canvasManager.setMaxScroll();
     }
-  }, [canvasManager]); // Only depend on canvasManager
+  }, [canvasManager, canvasRef]); // Only depend on canvasManager
 
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -48,7 +64,7 @@ const CanvasLayout = () => {
       )}
       <div className="overflow-hidden overflow-y-hidden">
         <InputLayout ref={inputAreaRef}></InputLayout>
-        
+
         <canvas
           className="bg-background outline-none"
           tabIndex={0}
@@ -61,14 +77,13 @@ const CanvasLayout = () => {
           ref={offscreenCanvasRef}
           width={width}
           height={height}
-          style={{ display: 'none' }}
-        >
-        </canvas>
+          style={{ display: "none" }}
+        ></canvas>
 
         {canvasManager && (
           <>
-            <Toolbar/>
-            <ZoomLayout/>
+            <Toolbar />
+            <ZoomLayout />
             <ConfigLayout></ConfigLayout>
           </>
         )}

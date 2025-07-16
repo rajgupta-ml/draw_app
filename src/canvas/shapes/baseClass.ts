@@ -1,15 +1,13 @@
 import type { currentPositionType, Shape } from "@/types/canvasTypes";
 import type { RoughCanvas } from "roughjs/bin/canvas";
-import type { Options } from "roughjs/bin/core";
-
-// export interface IShapeRenders<T extends Shape> {
-//   createShape: (currentPosition: currentPositionType) => T;
-//   render: (existingShape: T, canvas: RoughCanvas) => void;
-// }
 
 export abstract class IShapeRenders<T extends Shape> {
   abstract createShape(currentPosition: currentPositionType): T;
-  abstract render(existingShape: T, canvas: RoughCanvas, ctx : CanvasRenderingContext2D): void;
+  abstract render(
+    existingShape: T,
+    canvas: RoughCanvas,
+    ctx: CanvasRenderingContext2D,
+  ): void;
   abstract isPointInShape(shape: T, px: number, py: number): boolean;
 
   protected isPointInLine(
@@ -19,7 +17,7 @@ export abstract class IShapeRenders<T extends Shape> {
     y2: number,
     px: number,
     py: number,
-    TOLERANCE: number = 10,
+    TOLERANCE = 10,
   ): boolean {
     const AB = [x2 - x1, y2 - y1];
 

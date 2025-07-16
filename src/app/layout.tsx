@@ -22,10 +22,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable}`} suppressHydrationWarning>
       <body>
-        <script
+        {/* <script
           crossOrigin="anonymous"
           src="//unpkg.com/react-scan/dist/auto.global.js"
-        />
+        /> */}
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

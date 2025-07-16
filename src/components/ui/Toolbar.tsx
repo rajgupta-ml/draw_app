@@ -4,18 +4,15 @@ import { cn } from "@/lib/utils";
 import type { TOOLS_NAME } from "@/types/toolsTypes";
 import React, { useState } from "react";
 
-interface IToolbar {
-  setTool: ((tool: TOOLS_NAME) => void) ;
-  getTool: (() => TOOLS_NAME);
-}
 const Toolbar = () => {
   const [state, setState] = useState<TOOLS_NAME>();
-  const {canvasManager} = useCanvasManagerContext();
-  const {setTool, getTool} = canvasManager;
-  const handleClick = (name: TOOLS_NAME) => {
-      setTool(name);
-      setState(name);    
+  const { canvasManager } = useCanvasManagerContext();
+  const { setTool, getTool } = canvasManager;
 
+  const handleClick = (name: TOOLS_NAME) => {
+    console.log(state);
+    setTool(name);
+    setState(name);
   };
   return (
     <div className="absolute top-5 left-1/2 -translate-x-1/2">
@@ -28,7 +25,7 @@ const Toolbar = () => {
               className={cn(
                 "hover:bg-accent hover:text-accent-foreground text-muted-foreground flex cursor-pointer items-end gap-1 rounded-md p-2 transition-all duration-300",
                 getTool && getTool() == name
-                  ? "bg-accent text-accent-foreground "
+                  ? "bg-accent text-accent-foreground"
                   : "",
               )}
             >
