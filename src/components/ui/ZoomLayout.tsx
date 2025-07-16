@@ -13,7 +13,7 @@ interface IZoomLayout  {
     undo : () => void;
     redo : () => void
 }
-const ZoomLayout = ({scaleDown, scaleUp, getScale, undoQueue, redoQueue, undo, redo} : IZoomLayout) => {
+const ZoomLayout = ({scaleDown, scaleUp, getScale, undo, redo} : IZoomLayout) => {
 
     
     const [scale, setScale] = useState("100%");

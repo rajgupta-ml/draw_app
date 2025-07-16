@@ -10,8 +10,9 @@ import type {
   BehaviorContext,
   IInteractionBehavior,
 } from "../InteractionBehaviour/baseclass";
-import { shapeConfig } from "@/constants/canvasConstant";
 import type { Options } from "roughjs/bin/core";
+import { AddShapeCommand } from "../UndoAndRedoCmd/ShapeCommand";
+import type { CanvasManager } from "@/manager/CanvasManager";
 type GeometricShape =
   | RectShape
   | EclipseShape
@@ -34,39 +35,43 @@ export class GeometricBehaviour<T extends GeometricShape>
     this.currentPosition.endX = x;
     this.currentPosition.endY = y;
   }
-  onMouseMove({ x, y, requestRedraw }: BehaviorContext): void {
+  onMouseMove({ x, y, manager }: BehaviorContext): void {
+    const {drawCanvas} = manager
     if (this.clicked && this.shapeRenders) {
       this.currentPosition.endX = x;
       this.currentPosition.endY = y;
-      requestRedraw();
+      drawCanvas();
       this.dragged = true;
     }
   }
-  onMouseUp({ requestRedraw, addShape, config }: BehaviorContext): void {
+  onMouseUp({ executeCanvasCommnad, manager }: BehaviorContext): void {
+    const {drawCanvas } = manager
     this.clicked = false;
     if (this.dragged && this.shapeRenders) {
       const newShape = this.shapeRenders.createShape(this.currentPosition);
+      const config = manager.config;
       const newShapeWithConfig = {...newShape, config}
-      if (newShape) {
-        addShape({ ...newShapeWithConfig, id: crypto.randomUUID() });
-      }
-      requestRedraw();
+      executeCanvasCommnad(new AddShapeCommand(manager, newShapeWithConfig))
+      drawCanvas();
     }
     this.dragged = false;
   }
   renderShapes(
-    { roughCanvas, ctx }: Pick<BehaviorContext, "roughCanvas" | "ctx">,
+    manager : CanvasManager,
     shape: T,
   ): void {
+    const {roughCanvas, offScreenCanvasctx} = manager
     if (this.shapeRenders) {
-      this.shapeRenders.render(shape, roughCanvas, ctx);
+      this.shapeRenders.render(shape, roughCanvas, offScreenCanvasctx);
     }
   }
-  previewShape({ roughCanvas, ctx}: Pick<BehaviorContext, "roughCanvas" | "ctx">, config : Options): void {
+  previewShape(manager : CanvasManager, config : Options): void {
+    const {roughCanvas, offScreenCanvasctx} = manager
+
     if (this.shapeRenders && this.dragged) {
       const shape = this.shapeRenders.createShape(this.currentPosition);
       const newShapeWithConfig = {...shape, config}
-      this.shapeRenders.render(newShapeWithConfig, roughCanvas, ctx);
+      this.shapeRenders.render(newShapeWithConfig, roughCanvas, offScreenCanvasctx);
     }
   }
   getShapeRenderer(): IShapeRenders<T> {

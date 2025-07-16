@@ -1,47 +1,44 @@
     import type { currentPositionType, Shape, TextShape } from "@/types/canvasTypes";
     import type { IShapeRenders } from "../shapes/baseClass";
     import type { BehaviorContext, IInteractionBehavior } from "./baseclass";
-import { TOOLS_NAME } from "@/types/toolsTypes";
-import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext";
+    import { TOOLS_NAME } from "@/types/toolsTypes";
+    import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext";
+    import type { ICommand } from "../UndoAndRedoCmd/baseClass";
+    import { AddShapeCommand, RemoveShapeCommand } from "../UndoAndRedoCmd/ShapeCommand";
+    import type { CanvasManager } from "@/manager/CanvasManager";
 
     export class TextBehaviour implements IInteractionBehavior{
 
         private input : null | HTMLInputElement = null
-       
-        private ctx: CanvasRenderingContext2D | null = null;
-        private addShape: ((s: Shape) => void) | null = null;
-        private requestRedraw: (() => void) | null = null;
         private finalized = false; 
         private isEditing : boolean = false;
-        private shapeId : string | null = null;
         private textToEdit: TextShape | null = null;
         constructor(private shapeRender : IShapeRenders<TextShape>){}
-        onMouseDown({ x, y, inputArea, ctx, requestRedraw, addShape, rawX, rawY, canvas, shapes, removeShape, config}: BehaviorContext): void {
+        onMouseDown({ x, y, executeCanvasCommnad, rawX, rawY, manager}: BehaviorContext): void {
+            const {shapes, canvas, drawCanvas, inputArea} = manager
             if (this.input === null) {
                 let shape : Shape | null = null;
+                let originalIndex = 0;
                 for(let i = shapes.length - 1; i >= 0; i--){
                     console.log("I reach here")
                     shape = shapes[i]!
                     if(shape.type === TOOLS_NAME.TEXT && this.shapeRender.isPointInShape(shape as TextShape, x, y)){
                         canvas.style.cursor = "text";
                         this.isEditing = true;
-                        this.shapeId = shape.id ?? null;
                         this.textToEdit = shape as TextShape;
+                        originalIndex = i;
                         break;
                     }
                 }
 
-                if(this.isEditing && this.shapeId){
-                    removeShape(this.shapeId)
-                    requestRedraw();
+                if(this.isEditing && shape){
+                    executeCanvasCommnad(new RemoveShapeCommand(manager, shape, originalIndex))
+                    drawCanvas();
                     this.isEditing = false
                 }
 
-                this.ctx = ctx;
-                this.addShape = addShape;
-                this.requestRedraw = requestRedraw;
                 
-                this.input = this.createInputBox(x, y, rawX, rawY, canvas, config as TextOptionsPlusGeometricOptions);
+                this.input = this.createInputBox(x, y, rawX, rawY, manager, executeCanvasCommnad);
                 inputArea.appendChild(this.input);
                 this.input.focus();
                 this.input.select();
@@ -54,7 +51,8 @@ import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext
         onMouseUp(context: BehaviorContext): void {
             
         }
-        onMouseMove({shapes, canvas, x,y}: BehaviorContext): void {
+        onMouseMove({x,y, manager}: BehaviorContext): void {
+            const {shapes, canvas } = manager
             for(let i = shapes.length - 1; i >= 0; i--){
                 const shape = shapes[i]!
                 if(shape.type === TOOLS_NAME.TEXT && this.shapeRender.isPointInShape(shape as TextShape, x, y)){
@@ -67,27 +65,36 @@ import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext
 
         }
 
-        renderShapes({roughCanvas, ctx}: Pick<BehaviorContext, "roughCanvas" | "ctx">, shape: TextShape): void {
-            this.shapeRender.render(shape, roughCanvas, ctx);
+        renderShapes(manager : CanvasManager, shape: TextShape): void {
+            const {roughCanvas, offScreenCanvasctx} = manager
+            this.shapeRender.render(shape, roughCanvas, offScreenCanvasctx);
         }
 
-        private createInputBox(x: number, y: number, rawX : number, rawY : number, canvas : HTMLCanvasElement, config : TextOptionsPlusGeometricOptions) {
+        private createInputBox(
+            x: number, 
+            y: number, 
+            rawX : number, 
+            rawY : number, 
+            manager : CanvasManager,
+            executeCanvasCommnad : (cmd : ICommand) => void
+        ) {
             let screenX;
             let screenY
             let font_size;
             let font_family
             let stroke;
+            const {canvas, config} = manager 
             const input = document.createElement("input");
 
             const canvasRect = canvas.getBoundingClientRect();
 
 
-            if(!this.textToEdit ){
+            if(!this.textToEdit){
                 screenX  = rawX - canvasRect.left
                 screenY  = rawY - canvasRect.top
-                font_size = config.fontSize
-                font_family = config.fontFamily
-                stroke = config.stroke
+                font_size = config!.fontSize
+                font_family = config!.fontFamily
+                stroke = config!.stroke
             }else{
                 screenX = (this.textToEdit.x).toString();
                 screenY = (this.textToEdit.y).toString();
@@ -103,7 +110,7 @@ import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext
             input.style.fontFamily = font_family
             input.style.fontSize = font_size
             input.style.color = stroke!
-            input.style.textAlign = config.textAlignment
+            input.style.textAlign = config!.textAlignment
             input.style.outline = "none";
             input.value = this.textToEdit?.text ?? "Add Text";
         
@@ -111,7 +118,7 @@ import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext
             input.addEventListener("keydown", (e) => {
                 if (e.key === "Enter") {
                     e.preventDefault();
-                    this.finalizeCreateInput(x,y, config);
+                    this.finalizeCreateInput(x,y, config!, manager, executeCanvasCommnad);
                 }
             });
         
@@ -123,9 +130,17 @@ import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext
             return input;
         }
 
-        private finalizeCreateInput = (x : number, y : number, config : TextOptionsPlusGeometricOptions) => {
+        private finalizeCreateInput = (
+            x : number, 
+            y : number,
+            config : TextOptionsPlusGeometricOptions, 
+            manager : CanvasManager,
+            executeCanvasCommnad : (cmd : ICommand) => void
+        ) => {
             if (this.finalized || this.input === null) return;
             this.finalized = true;
+
+            const {ctx, drawCanvas} = manager
         
             const text = this.input.value;
             const currentPosition: currentPositionType = {
@@ -142,10 +157,10 @@ import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext
             const fontColor = this.textToEdit?.config.stroke || config.stroke!
             
             // Set the font on the context to match what will be rendered
-            this.ctx!.font = `${fontSize}px ${fontFamily}`;
+            ctx.font = `${fontSize}px ${fontFamily}`;
             
             // Now measure the text width with the correct font
-            const textWidth = this.ctx!.measureText(text).width;
+            const textWidth = ctx.measureText(text).width;
             shape.w = Math.floor(textWidth);
             
             // Also ensure the shape has the correct font properties
@@ -155,13 +170,13 @@ import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext
 
 
             if(text){
-                this.addShape!(shape);
+                executeCanvasCommnad(new AddShapeCommand(manager, shape));
             }
 
             this.input.remove(); 
             this.input = null;
             this.textToEdit = null; 
-            this.requestRedraw!();
+            drawCanvas();
         };
 
 

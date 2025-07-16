@@ -11,30 +11,45 @@ import type { Options } from "roughjs/bin/core";
 import type { sidebarType } from "@/context/useSidebar";
 import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext";
 import { strokeColor } from "@/components/ui/configLayout/constant";
+import type { ICommand } from "@/canvas/UndoAndRedoCmd/baseClass";
 
 export class CanvasManager {
+  roughCanvas: RoughCanvas;
+  scrollPositionX: number = 0;
+  scrollPositionY: number = 0;
+  shapes: Shape[] = [];
+  config: TextOptionsPlusGeometricOptions | null = null
+  selectedTool: TOOLS_NAME;
+  scale: number = 1; 
+  theme: string | null = null;
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D; 
+  offScreenCanvas: HTMLCanvasElement; 
+  offScreenCanvasctx: CanvasRenderingContext2D;
+  inputArea : HTMLDivElement;
   private interactionBehaviours: typeof InteractionBehaviourList = InteractionBehaviourList;
-  private roughCanvas: RoughCanvas;
-  private scrollPositionX: number = 0;
-  private scrollPositionY: number = 0;
-  private shapes: Shape[] = [];
-  private redoShape: Shape[] = [];
-  private selectedTool: TOOLS_NAME;
-  private scale: number = 1; 
+  private undoStack : ICommand[] = [];
+  private redoStack : ICommand[] = [];
+  private operationNumber : number = 0;
   private maxScrollX: number = 0; 
   private maxScrollY: number = 0;
   private minScale: number = 0.1; 
   private maxScale: number = 10; 
-  private theme: string | null = null;
-  private config: TextOptionsPlusGeometricOptions | null = null
+  private maxHistorySize = 100;
+
   constructor(
-    private canvas: HTMLCanvasElement, 
-    private ctx: CanvasRenderingContext2D, 
-    private offScreenCanvas: HTMLCanvasElement, 
-    private offScreenCanvasctx: CanvasRenderingContext2D,
-    private inputArea : HTMLDivElement,
+    canvas: HTMLCanvasElement, 
+    ctx: CanvasRenderingContext2D, 
+    offScreenCanvas: HTMLCanvasElement, 
+    offScreenCanvasctx: CanvasRenderingContext2D,
+    inputArea : HTMLDivElement,
     private toggleSidebar : (args : sidebarType | null) => void,
   ) {
+    this.canvas = canvas;
+    this.ctx = ctx;
+    this.offScreenCanvas = offScreenCanvas;
+    this.offScreenCanvasctx = offScreenCanvasctx;
+    this.inputArea = inputArea
     this.theme = window.localStorage.getItem("theme");
     this.theme === "dark" ? shapeConfig.stroke = "white" : shapeConfig.stroke = "black"
     this.roughCanvas = new RoughCanvas(this.offScreenCanvas);
@@ -72,7 +87,7 @@ export class CanvasManager {
 
 
   private requestRedraw =(event : Event) => {
-    this.drawCanvas({isScrolling : false});
+    this.drawCanvas();
   }
   
   private handlefetchConfig =(event : Event) => {
@@ -81,7 +96,7 @@ export class CanvasManager {
   private handleThemeChange = (event : Event) => {
     const theme = (event as CustomEvent).detail.theme;
     this.theme = theme;
-    this.drawCanvas({isScrolling : false})
+    this.drawCanvas()
   }
 
   private handleKeyPress = (e : KeyboardEvent) => {
@@ -97,7 +112,7 @@ export class CanvasManager {
         this.scale = 1;
         this.scrollPositionX = 0;
         this.scrollPositionY = 0;
-        this.drawCanvas({ isScrolling: false });
+        this.drawCanvas();
 
       }
       window.dispatchEvent(new Event("scale-change"));
@@ -123,7 +138,7 @@ export class CanvasManager {
         
     this.scrollPositionX = Math.max(-this.maxScrollX, Math.min(this.maxScrollX, this.scrollPositionX + deltaX));
     this.scrollPositionY = Math.max(-this.maxScrollY, Math.min(this.maxScrollY, this.scrollPositionY + deltaY));
-    this.drawCanvas({ isScrolling: true });
+    this.drawCanvas(true);
   };
 
   private handleMouseDown = (e: MouseEvent) => {
@@ -144,16 +159,14 @@ export class CanvasManager {
   };
 
   // Draw and render on canvas method
-  drawCanvas = ({ isScrolling }: { isScrolling: boolean }) => {
-    const targetCtx = this.offScreenCanvasctx;
-    const targetRoughCanvas = this.roughCanvas
-    targetCtx.save();
+  drawCanvas = (isScrolling  : boolean = false) => {
+    this.offScreenCanvasctx.save();
 
-    targetCtx.resetTransform();
-    targetCtx.clearRect(0, 0, this.canvas.width , this.canvas.height );
+    this.offScreenCanvasctx.resetTransform();
+    this.offScreenCanvasctx.clearRect(0, 0, this.canvas.width , this.canvas.height );
     
-    targetCtx.scale(this.scale, this.scale);
-    targetCtx.translate(-this.scrollPositionX, -this.scrollPositionY);
+    this.offScreenCanvasctx.scale(this.scale, this.scale);
+    this.offScreenCanvasctx.translate(-this.scrollPositionX, -this.scrollPositionY);
     
     this.shapes.map((shape) => {
 
@@ -170,7 +183,7 @@ export class CanvasManager {
 
       const behavior = this.interactionBehaviours.get(shape.type);
       if(behavior && behavior.renderShapes){
-        behavior.renderShapes({roughCanvas : targetRoughCanvas, ctx : targetCtx}, shape)
+        behavior.renderShapes(this, shape)
       }
     });
 
@@ -180,14 +193,14 @@ export class CanvasManager {
       if(behavior && behavior.previewShape){
         // We ask for the config 
         const config = (this.config ?? shapeConfig) as TextOptionsPlusGeometricOptions;
-        behavior.previewShape({roughCanvas : targetRoughCanvas, ctx : targetCtx}, config)
+        behavior.previewShape(this, config)
       }
     }
-    targetCtx.restore();
+    this.offScreenCanvasctx.restore();
 
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); 
     this.ctx.drawImage(this.offScreenCanvas, 0, 0);  
-    };
+  };
 
   // Setter and Getter Methods
   setTool = (tool: TOOLS_NAME) => {
@@ -222,26 +235,38 @@ export class CanvasManager {
     return this.shapes
   }
 
-
-  undo = () => {
-    if(this.shapes.length  > 0){
-      const shape = this.shapes[this.shapes.length - 1] as Shape;
-      this.redoShape.push(shape);
-      this.shapes.pop();
-      this.drawCanvas({isScrolling : false});
+  executeCmd = (command : ICommand) => {
+    command.operationNumber = ++this.operationNumber;
+    command.execute();
+    this.undoStack.push(command);
+    if (this.undoStack.length > this.maxHistorySize) {
+      this.undoStack.shift(); 
     }
-    console.log("Undo Not Possible")
+    console.log("undoStack: ", this.undoStack)
+  }
+  undo = () => {
+    if(this.undoStack.length > 0){
+      const command = this.undoStack.pop();
+      console.log("poped Cmd:", command)
+      if(command){
+        command.undo();
+        this.redoStack.push(command);
+      }
+    }else{
+      console.log("Undo Not Possible: No actions to undo.");
+    }
   }
 
   redo = () => {
-    if(this.redoShape.length > 0){
-      const shape = this.redoShape[this.redoShape.length - 1] as Shape;
-      this.shapes.push(shape);
-      this.redoShape.pop();
-      this.drawCanvas({isScrolling : false});
-    } 
-    console.log("Redo Not Possible")
-
+    if(this.redoStack.length > 0){
+      const command = this.redoStack.pop();
+      if(command){
+        command.execute();
+        this.undoStack.push(command);
+      }
+    }else{
+      console.log("Redo Not Possible: No actions to redo.");
+    }
   }
 
 
@@ -270,7 +295,7 @@ export class CanvasManager {
     this.scrollPositionY = worldCenterY - (centerScreenY / newScale);
 
     this.scale = newScale;
-    this.drawCanvas({ isScrolling: false });
+    this.drawCanvas();
   } 
 
   scaleDown = () => {
@@ -288,7 +313,7 @@ export class CanvasManager {
     this.scrollPositionY = worldCenterY - (centerScreenY / newScale);
 
     this.scale = newScale;
-    this.drawCanvas({ isScrolling: false });
+    this.drawCanvas();
   }
 
   // Helper
@@ -315,33 +340,18 @@ export class CanvasManager {
   private createBehaviorContext(e: MouseEvent): BehaviorContext {
     const { x, y } = this.getCoordinateAdjustedByScrollAndScale(e.clientX, e.clientY);
     return {
+      manager : this,
       rawX : e.clientX,
       rawY : e.clientY,
       x,
       y,
-      shapes: this.shapes,
-      canvas: this.canvas,
-      inputArea : this.inputArea,
-      ctx: this.offScreenCanvasctx,
-      roughCanvas: this.roughCanvas,
-      config : this.config as Options,
-      addShape: (shape) => this.shapes.push(shape),
-      removeShape: (id : string) => {
-        const index = this.shapes.findIndex(shape => shape.id === id);
-        console.log({index})
-        if (index !== -1) this.shapes.splice(index, 1);
-      },
-      addRedoShape : (shape) => this.redoShape.push(shape),
-      requestRedraw: (isScrolling = false) => this.drawCanvas({ isScrolling }),
+      executeCanvasCommnad : (command : ICommand) =>  this.executeCmd(command),
       isPointInShape: (shape: Shape, px: number, py: number) => {
         const renderer = this.getRendererForShape(shape);
         return renderer ? renderer.isPointInShape(shape, px, py) : false;
       },
-      getScrollPositionX : () => this.scrollPositionX,
-      getScrollPositionY : () => this.scrollPositionY,
       setScrollPositionX : (x : number ) => this.scrollPositionX = x,
       setScrollPositionY : (y : number ) => this.scrollPositionY = y
-
     };
   }
 }

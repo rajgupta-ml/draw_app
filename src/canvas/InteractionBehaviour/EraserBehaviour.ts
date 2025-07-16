@@ -1,4 +1,4 @@
-import type { DiamondShape, LineShape, RectShape, RightArrowShape, Shape, TextShape } from "@/types/canvasTypes";
+import type {  Shape } from "@/types/canvasTypes";
 import type { BehaviorContext, IInteractionBehavior } from "./baseclass";
 import { TOOLS_NAME } from "@/types/toolsTypes";
 import { Rectangle } from "../shapes/Rectangle";
@@ -10,10 +10,13 @@ import { Line } from "../shapes/Line";
 import { Ellipse } from "../shapes/Ellipse";
 import { eraserShapeConfig, shapeConfig } from "@/constants/canvasConstant";
 import { Text } from "../shapes/text";
+import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext";
+import { RemoveShapeCommand } from "../UndoAndRedoCmd/ShapeCommand";
+import type { CanvasManager } from "@/manager/CanvasManager";
 
 export class EraserBehaviour implements IInteractionBehavior{
     private clicked : boolean = false
-    private ShapeWhichNeedsToBeRemoved : {shape : Shape, index : number}[]= [];
+    private shapesToMarkForRemoval : Map<string, {shape : Shape, index : number}> = new Map()
     private currentMouseX = 0;
     private currentMouseY = 0;
     private shapeBehaviours = new Map<TOOLS_NAME,IShapeRenders<Shape>>([
@@ -28,66 +31,61 @@ export class EraserBehaviour implements IInteractionBehavior{
 
     onMouseDown(context: BehaviorContext): void {
         this.clicked = true;
+        this.shapesToMarkForRemoval.clear();
     }
 
-    onMouseUp({x,y,shapes , addRedoShape, requestRedraw}: BehaviorContext): void {
-        let itemsRemoved = 0;
-      
+    onMouseUp({ executeCanvasCommnad, manager}: BehaviorContext): void { 
+        const {drawCanvas} = manager
         this.clicked = false
-        const seenIds = new Set();
-        const shapesToBeRemovedFiltered = this.ShapeWhichNeedsToBeRemoved.filter((value) => {
-            if(!seenIds.has(value.shape.id)){
-                seenIds.add(value.shape.id)
-                return true
-            }else{
-                return false
-            }
-        })
+        
+        const sortedShapesToRemove = Array.from(this.shapesToMarkForRemoval.values()).sort((a, b) => b.index - a.index);
 
-        shapesToBeRemovedFiltered.forEach((removedShape) => {
-
-            addRedoShape(removedShape.shape);
-            shapes.splice(removedShape.index - itemsRemoved, 1)
-            itemsRemoved++;
+        sortedShapesToRemove.forEach(({shape, index}) => {
+            executeCanvasCommnad(new RemoveShapeCommand(manager, shape, index));
         })
-        requestRedraw();
+        this.shapesToMarkForRemoval.clear(); 
+        drawCanvas();
     }
 
     
-    onMouseMove({x, y, shapes, requestRedraw}: BehaviorContext): void {
-
+    onMouseMove({x, y, manager}: BehaviorContext): void {
+        const shapesToUpdateForPreview: { index: number, newShape: Shape }[] = [];
+        const {shapes, config, drawCanvas} = manager
         this.currentMouseX = x;
         this.currentMouseY = y;
         if(!this.clicked) {
             return
         };
         shapes.forEach((shape, index) => {
-            let newShape : Shape | null = null
-            if(shape.type === TOOLS_NAME.TEXT){
-                newShape = {
-                    ...(shape as TextShape), // Copy all properties from the original shape
-                    config: {
-                        ...(shape as TextShape).config, // Copy existing config properties from the original shape
-                        stroke: "grey" // Set the stroke color to "grey"
-                    }
-                };            }else{
-                newShape = {...shape, config : eraserShapeConfig}
-            }
             const shapeBehaviour = this.shapeBehaviours.get(shape.type);
-            if(shapeBehaviour?.isPointInShape(shape, x,y)){
-                this.ShapeWhichNeedsToBeRemoved.push({shape , index});
-                if(newShape){
-                    shapes[index] = newShape
+            
+            if(shapeBehaviour?.isPointInShape(shape,x,y) && !this.shapesToMarkForRemoval.has(shape.id!)){
+                this.shapesToMarkForRemoval.set(shape.id!, {shape: structuredClone(shape), index});
+                let newShape:  Shape | null;
+                if(config){
+                    const newConfig : TextOptionsPlusGeometricOptions = {...config, ...eraserShapeConfig}
+                    newShape = {
+                        ...shape,
+                        config : newConfig
+                    }
+    
+                    if (newShape) {
+                        shapesToUpdateForPreview.push({ index, newShape });
+                    }
                 }
             }
         })
 
-        requestRedraw();
+        shapesToUpdateForPreview.forEach(({ index, newShape }) => {
+            shapes[index] = newShape; 
+        });
+
+        drawCanvas();
     }
 
 
-    previewShape(context: Pick<BehaviorContext, "roughCanvas">): void {
-        const { roughCanvas } = context;
+    previewShape(manager : CanvasManager): void {
+        const { roughCanvas } = manager;
         // Draw your eraser cursor here
         const eraserSize = 20; // Adjust as needed
         const halfSize = eraserSize / 2;

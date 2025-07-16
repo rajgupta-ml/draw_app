@@ -10,6 +10,7 @@ import type {
 } from "@/types/canvasTypes";
 import { TOOLS_NAME } from "@/types/toolsTypes";
 import type { BehaviorContext, IInteractionBehavior } from "./baseclass";
+import type { CanvasManager } from "@/manager/CanvasManager";
 
 type SelectionAction = "IDLE" | "MOVING" | "RESIZING" | "SELECTING_AREA";
 type ResizeHandlePosition =
@@ -53,12 +54,11 @@ export class SelectionBehavior implements IInteractionBehavior {
   onMouseDown({ 
     x,
     y,
-    shapes,
-    requestRedraw,
     isPointInShape,
-    ctx,
+    manager
   }: BehaviorContext): void {
-    this.ctx = ctx;
+    const {offScreenCanvasctx, shapes, drawCanvas} = manager
+    this.ctx = offScreenCanvasctx;
     this.initialMousePosition = { x, y };
 
     const handle = this.getClickedResizeHandle(x, y);
@@ -84,7 +84,7 @@ export class SelectionBehavior implements IInteractionBehavior {
         this.initialShapesState = JSON.parse(
           JSON.stringify(this.selectedShapes),
         );
-        requestRedraw();
+        drawCanvas();
         if(this.selectedShapes.length > 0){
           // Write now edit can only be done on single shape not in group
           window.dispatchEvent(new CustomEvent("selectShape", {detail : {selectedShapes : this.selectedShapes[0] }}))
@@ -99,19 +99,17 @@ export class SelectionBehavior implements IInteractionBehavior {
     this.resizeHandles = [];
     this.currentAction = "SELECTING_AREA";
     this.selectionArea = { x1: x, y1: y, x2: x, y2: y };
-    requestRedraw();
+    drawCanvas();
   }
 
   onMouseMove({
     x,
     y,
-    requestRedraw,
-    canvas,
-    ctx,
     isPointInShape,
-    shapes,
+    manager
   }: BehaviorContext): void {
-    this.ctx = ctx;
+    const {offScreenCanvasctx, offScreenCanvas, shapes, drawCanvas} = manager
+    this.ctx = offScreenCanvasctx;
     const dx = x - this.initialMousePosition.x;
     const dy = y - this.initialMousePosition.y;
 
@@ -125,19 +123,19 @@ export class SelectionBehavior implements IInteractionBehavior {
         switch (handle.position) {
           case "topLeft":
           case "bottomRight":
-            canvas.style.cursor = "nwse-resize";
+            offScreenCanvas.style.cursor = "nwse-resize";
             break;
           case "topRight":
           case "bottomLeft":
-            canvas.style.cursor = "nesw-resize";
+            offScreenCanvas.style.cursor = "nesw-resize";
             break;
           case "top":
           case "bottom":
-            canvas.style.cursor = "ns-resize";
+            offScreenCanvas.style.cursor = "ns-resize";
             break;
           case "left":
           case "right":
-            canvas.style.cursor = "ew-resize";
+            offScreenCanvas.style.cursor = "ew-resize";
             break;
         }
         cursorChanged = true;
@@ -145,13 +143,13 @@ export class SelectionBehavior implements IInteractionBehavior {
         this.selectionBox &&
         this.isPointInBox(x, y, this.selectionBox)
       ) {
-        canvas.style.cursor = "move";
+        offScreenCanvas.style.cursor = "move";
         cursorChanged = true;
       } else {
         for (let i = shapes.length - 1; i >= 0; i--) {
           const shape = shapes[i]!;
           if (isPointInShape(shape, x, y)) {
-            canvas.style.cursor = "grab";
+            offScreenCanvas.style.cursor = "grab";
             cursorChanged = true;
             break;
           }
@@ -161,57 +159,59 @@ export class SelectionBehavior implements IInteractionBehavior {
       switch (this.clickedResizeHandle) {
         case "topLeft":
         case "bottomRight":
-          canvas.style.cursor = "nwse-resize";
+          offScreenCanvas.style.cursor = "nwse-resize";
           break;
         case "topRight":
         case "bottomLeft":
-          canvas.style.cursor = "nesw-resize";
+          offScreenCanvas.style.cursor = "nesw-resize";
           break;
         case "top":
         case "bottom":
-          canvas.style.cursor = "ns-resize";
+          offScreenCanvas.style.cursor = "ns-resize";
           break;
         case "left":
         case "right":
-          canvas.style.cursor = "ew-resize";
+          offScreenCanvas.style.cursor = "ew-resize";
           break;
       }
       cursorChanged = true;
     } else if (this.currentAction === "MOVING") {
-      canvas.style.cursor = "grabbing";
+      offScreenCanvas.style.cursor = "grabbing";
       cursorChanged = true;
     } else if (this.currentAction === "SELECTING_AREA") {
-      canvas.style.cursor = "crosshair";
+      offScreenCanvas.style.cursor = "crosshair";
       cursorChanged = true;
     }
 
     if (!cursorChanged) {
-      canvas.style.cursor = "default";
+      offScreenCanvas.style.cursor = "default";
     }
 
     switch (this.currentAction) {
       case "MOVING":
         this.moveShapes(dx, dy);
-        requestRedraw();
+        drawCanvas();
         break;
       case "RESIZING":
         if (this.clickedResizeHandle) {
           this.resizeShapes(dx, dy);
-          requestRedraw();
+          drawCanvas();
         }
         break;
       case "SELECTING_AREA":
         if (this.selectionArea) {
           this.selectionArea.x2 = x;
           this.selectionArea.y2 = y;
-          requestRedraw();
+          drawCanvas();
         }
         break;
     }
   }
 
-  onMouseUp({ shapes, requestRedraw, ctx }: BehaviorContext): void {
-    this.ctx = ctx;
+  onMouseUp({manager}: BehaviorContext): void {
+ 
+    const {offScreenCanvasctx, shapes,drawCanvas } = manager
+    this.ctx = offScreenCanvasctx;
     if (this.currentAction === "SELECTING_AREA" && this.selectionArea) {
       this.selectShapesInArea(shapes);
     }
@@ -219,11 +219,12 @@ export class SelectionBehavior implements IInteractionBehavior {
     this.clickedResizeHandle = null;
     this.selectionArea = null;
     this.initialShapesState = [];
-    requestRedraw();
+    drawCanvas();
   }
 
-  previewShape({ roughCanvas, ctx }: Pick<BehaviorContext, "roughCanvas" | "ctx">): void {
-    this.ctx = ctx;
+  previewShape(manager : CanvasManager): void {
+    const {offScreenCanvasctx, roughCanvas} = manager
+    this.ctx = offScreenCanvasctx;
     if (this.selectionBox) {
       roughCanvas.rectangle(
         this.selectionBox.x,

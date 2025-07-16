@@ -1,4 +1,3 @@
-import type { Shape } from "@/types/canvasTypes";
 import type { BehaviorContext, IInteractionBehavior } from "./baseclass";
 
 export class HandBehaviour implements IInteractionBehavior{ 
@@ -10,17 +9,18 @@ export class HandBehaviour implements IInteractionBehavior{
 
     private clicked : boolean = false;
 
-    onMouseDown({x,y, getScrollPositionX, getScrollPositionY}: BehaviorContext): void {
+    onMouseDown({x,y, manager}: BehaviorContext): void {
+        const {scrollPositionX, scrollPositionY} = manager
         this.clicked = true;
         this.startX = x;
         this.startY = y;
 
 
-        this.initialScrollX = getScrollPositionX();
-        this.initialScrollY = getScrollPositionY(); 
+        this.initialScrollX = scrollPositionX;
+        this.initialScrollY = scrollPositionY; 
     }
     
-    onMouseMove({x,y, setScrollPositionX, setScrollPositionY, requestRedraw}: BehaviorContext): void {
+    onMouseMove({x,y, setScrollPositionX, setScrollPositionY, manager}: BehaviorContext): void {
         if(this.clicked){
             const dx = (x - this.startX) / 2;
             const dy = (y - this.startY) / 2;
@@ -29,11 +29,11 @@ export class HandBehaviour implements IInteractionBehavior{
             setScrollPositionY(this.initialScrollY - dy);
 
 
-            requestRedraw(true);
+            manager.drawCanvas(true);
         }
     }
 
-    onMouseUp({requestRedraw}: BehaviorContext): void {
+    onMouseUp(): void {
         this.clicked = false;
     }
 

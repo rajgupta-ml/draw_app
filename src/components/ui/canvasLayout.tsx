@@ -21,7 +21,7 @@ const CanvasLayout = () => {
   useEffect(() => {
     if (canvasManager && canvasRef.current) {
       canvasManager.setMaxScroll();
-      canvasManager.drawCanvas({ isScrolling: false });   
+      canvasManager.drawCanvas(false);   
       // This is to only intial send the config;
       handleConfigChange({...config});
     }

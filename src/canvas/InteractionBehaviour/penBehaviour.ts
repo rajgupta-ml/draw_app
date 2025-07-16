@@ -5,8 +5,9 @@ import type {
   BehaviorContext,
   IInteractionBehavior,
 } from "../InteractionBehaviour/baseclass";
-import { shapeConfig } from "@/constants/canvasConstant";
-import type { Options } from "roughjs/bin/core";
+import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext";
+import { AddShapeCommand } from "../UndoAndRedoCmd/ShapeCommand";
+import type { CanvasManager } from "@/manager/CanvasManager";
 
 export class PenBehavior implements IInteractionBehavior {
   private currentPath: PenArrayShape[] = [];
@@ -17,47 +18,48 @@ export class PenBehavior implements IInteractionBehavior {
     this.clicked = true;
     this.currentPath = [[x, y]];
   }
-  onMouseMove({ x, y, requestRedraw }: BehaviorContext): void {
+  onMouseMove({ x, y, manager}: BehaviorContext): void {
+    const {drawCanvas} = manager
     if (this.clicked && this.shapeRenders) {
       this.currentPath.push([x, y]);
-      requestRedraw();
+      drawCanvas();
       this.dragged = true;
     }
   }
-  onMouseUp({ requestRedraw, addShape, config }: BehaviorContext): void {
+  onMouseUp({ manager, executeCanvasCommnad }: BehaviorContext): void {
+    const {config, drawCanvas} = manager
     this.clicked = false;
     if (this.dragged && this.shapeRenders && this.currentPath.length > 1) {
       const newShape: PenShape = {
         type: TOOLS_NAME.PEN,
         lineArray: [...this.currentPath],
+        config : (config as TextOptionsPlusGeometricOptions) 
       };
-      if (newShape) {
-        addShape({ ...newShape, id: crypto.randomUUID(), config : (config as Record<string, string>) });
-      }
-      requestRedraw();
+      executeCanvasCommnad(new AddShapeCommand(manager, newShape))
+      drawCanvas();
       this.currentPath = [];
     }
     this.dragged = false;
   }
-  renderShapes(
-    { roughCanvas,ctx }: Pick<BehaviorContext, "roughCanvas" | "ctx">,
-    shape: PenShape,
+  renderShapes(manager : CanvasManager ,shape: PenShape,
   ): void {
+    const {roughCanvas, offScreenCanvasctx} = manager
     if (this.shapeRenders) {
       this.shapeRenders.render(
         { type: TOOLS_NAME.PEN, lineArray: shape.lineArray, config : shape.config  },
         roughCanvas,
-        ctx
+        offScreenCanvasctx
       );
     }
   }
 
-  previewShape({ roughCanvas, ctx }: Pick<BehaviorContext, "roughCanvas" | "ctx">, config : Options): void {
+  previewShape(manager : CanvasManager, config : TextOptionsPlusGeometricOptions): void {
+    const {roughCanvas, offScreenCanvasctx} = manager
     if (this.shapeRenders && this.dragged && this.currentPath.length > 1) {
       this.shapeRenders.render(
-        { type: TOOLS_NAME.PEN, lineArray: this.currentPath, config : (config as Record<string, string>)},
+        { type: TOOLS_NAME.PEN, lineArray: this.currentPath, config : (config as TextOptionsPlusGeometricOptions)},
         roughCanvas,
-        ctx
+        offScreenCanvasctx
       );
     }
   }
