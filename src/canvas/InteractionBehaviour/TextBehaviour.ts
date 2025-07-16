@@ -2,6 +2,7 @@
     import type { IShapeRenders } from "../shapes/baseClass";
     import type { BehaviorContext, IInteractionBehavior } from "./baseclass";
 import { TOOLS_NAME } from "@/types/toolsTypes";
+import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext";
 
     export class TextBehaviour implements IInteractionBehavior{
 
@@ -15,7 +16,7 @@ import { TOOLS_NAME } from "@/types/toolsTypes";
         private shapeId : string | null = null;
         private textToEdit: TextShape | null = null;
         constructor(private shapeRender : IShapeRenders<TextShape>){}
-        onMouseDown({ x, y, inputArea, ctx, requestRedraw, addShape, rawX, rawY, canvas, shapes, removeShape}: BehaviorContext): void {
+        onMouseDown({ x, y, inputArea, ctx, requestRedraw, addShape, rawX, rawY, canvas, shapes, removeShape, config}: BehaviorContext): void {
             if (this.input === null) {
                 let shape : Shape | null = null;
                 for(let i = shapes.length - 1; i >= 0; i--){
@@ -23,7 +24,6 @@ import { TOOLS_NAME } from "@/types/toolsTypes";
                     shape = shapes[i]!
                     if(shape.type === TOOLS_NAME.TEXT && this.shapeRender.isPointInShape(shape as TextShape, x, y)){
                         canvas.style.cursor = "text";
-                        console.log("Hello")
                         this.isEditing = true;
                         this.shapeId = shape.id ?? null;
                         this.textToEdit = shape as TextShape;
@@ -41,7 +41,7 @@ import { TOOLS_NAME } from "@/types/toolsTypes";
                 this.addShape = addShape;
                 this.requestRedraw = requestRedraw;
                 
-                this.input = this.createInputBox(x, y, rawX, rawY, canvas);
+                this.input = this.createInputBox(x, y, rawX, rawY, canvas, config as TextOptionsPlusGeometricOptions);
                 inputArea.appendChild(this.input);
                 this.input.focus();
                 this.input.select();
@@ -56,7 +56,6 @@ import { TOOLS_NAME } from "@/types/toolsTypes";
         }
         onMouseMove({shapes, canvas, x,y}: BehaviorContext): void {
             for(let i = shapes.length - 1; i >= 0; i--){
-                console.log("I reach here")
                 const shape = shapes[i]!
                 if(shape.type === TOOLS_NAME.TEXT && this.shapeRender.isPointInShape(shape as TextShape, x, y)){
                     canvas.style.cursor = "text";
@@ -72,18 +71,33 @@ import { TOOLS_NAME } from "@/types/toolsTypes";
             this.shapeRender.render(shape, roughCanvas, ctx);
         }
 
-        private createInputBox(x: number, y: number, rawX : number, rawY : number, canvas : HTMLCanvasElement) {
+        private createInputBox(x: number, y: number, rawX : number, rawY : number, canvas : HTMLCanvasElement, config : TextOptionsPlusGeometricOptions) {
+            let screenX;
+            let screenY
+            let font_size;
             const input = document.createElement("input");
 
             const canvasRect = canvas.getBoundingClientRect();
 
-            const screenX  = rawX - canvasRect.left
-            const screenY  = rawY - canvasRect.top
-        
+
+            if(!this.textToEdit ){
+                screenX  = rawX - canvasRect.left
+                screenY  = rawY - canvasRect.top
+                font_size = config.fontSize
+            }else{
+                screenX = (this.textToEdit.x).toString();
+                screenY = (this.textToEdit.y).toString();
+                font_size = `${this.textToEdit.config.font_size}px`
+            }
+            
+
             input.style.position = "absolute";
             input.style.top = `${screenY}px`;
-            input.style.left = `${screenX}px`
-            // input.style.fontSize = this.textToEdit?.font_size ?? "16px"
+            input.style.left =`${screenX}px`
+            input.style.fontFamily = config.fontFamily
+            input.style.fontSize = font_size
+            input.style.color = this.textToEdit?.config.stroke||config.stroke!
+            input.style.textAlign = config.textAlignment
             input.style.outline = "none";
             input.value = this.textToEdit?.text ?? "Add Text";
         
@@ -91,7 +105,7 @@ import { TOOLS_NAME } from "@/types/toolsTypes";
             input.addEventListener("keydown", (e) => {
                 if (e.key === "Enter") {
                     e.preventDefault();
-                    this.finalizeCreateInput(x,y);
+                    this.finalizeCreateInput(x,y, config);
                 }
             });
         
@@ -103,7 +117,7 @@ import { TOOLS_NAME } from "@/types/toolsTypes";
             return input;
         }
 
-        private finalizeCreateInput = (x : number, y : number) => {
+        private finalizeCreateInput = (x : number, y : number, config : TextOptionsPlusGeometricOptions) => {
             if (this.finalized || this.input === null) return;
             this.finalized = true;
         
@@ -117,8 +131,9 @@ import { TOOLS_NAME } from "@/types/toolsTypes";
             const shape = this.shapeRender.createShape(currentPosition);
             shape.text = text;
             
-            const fontSize = this.textToEdit?.config.font_size || shape.config.font_size || '16';
-            const fontFamily = this.textToEdit?.config.font_family || shape.config.font_family || 'Arial';
+            const fontSize = this.textToEdit?.config.font_size || parseInt(config.fontSize).toString() || '16';
+            const fontFamily = this.textToEdit?.config.font_family || config.fontFamily || 'Arial';
+            const fontColor = this.textToEdit?.config.stroke || config.stroke!
             
             // Set the font on the context to match what will be rendered
             this.ctx!.font = `${fontSize}px ${fontFamily}`;
@@ -129,11 +144,14 @@ import { TOOLS_NAME } from "@/types/toolsTypes";
             
             // Also ensure the shape has the correct font properties
             shape.config.font_size = fontSize;
-            shape.config.font_family = fontFamily
+            shape.config.font_family = fontFamily;
+            shape.config.stroke = fontColor;
+
 
             if(text){
                 this.addShape!(shape);
             }
+
             this.input.remove(); 
             this.input = null;
             this.textToEdit = null; 

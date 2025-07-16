@@ -23,8 +23,7 @@ export class Text extends IShapeRenders<TextShape>{
         return newShape
     }
     render(existingShape: TextShape, canvas: RoughCanvas, ctx: CanvasRenderingContext2D): void {
-        ctx.font = "16px Arial";
-        ctx.font = `${existingShape.config.font_size} ${existingShape.config.font_family}`
+        ctx.font = `${existingShape.config.font_size}px ${existingShape.config.font_family}`
         ctx.fillStyle = existingShape.config.stroke
         ctx.textBaseline = "top"; 
         ctx.fillText(existingShape.text, existingShape.x , existingShape.y);
