@@ -1,4 +1,4 @@
-import { useConfig } from "@/context/configContext";
+import { useConfig } from "@/context/useConfigContext";
 import { useTheme } from "next-themes";
 import { useLayoutEffect, useRef, type ReactNode } from "react";
 import { strokeColor } from "./constant";
@@ -7,23 +7,12 @@ import { Copy, Trash } from "lucide-react";
 
 export const StrokeColorLayout = () => {
     const { resolvedTheme } = useTheme(); 
-    const { config, setConfig } = useConfig();
+    const { config, handleConfigChange } = useConfig();
     const colorPickerRef = useRef<HTMLInputElement>(null); 
 
-    useLayoutEffect(() => {
-        if (resolvedTheme === "light" || resolvedTheme === "dark") {
-            setConfig(prevConfig => ({
-                ...prevConfig,
-                stroke: strokeColor[resolvedTheme][0]
-            }));
-        }
-    }, [resolvedTheme, setConfig]); 
 
     const handleColorChange = (color: string) => {
-        setConfig(prevConfig => ({
-            ...prevConfig,
-            stroke: color 
-        }));
+        handleConfigChange({...config, stroke : color})
     };
 
     return (
@@ -87,14 +76,15 @@ export const ActionButtons = () => {
     );
 };
 
-export const Button = ({children, className = "", altText } : {children : ReactNode, className? : string, altText : string}) => {
+export const Button = ({children, className = "", altText, onClick } : {children : ReactNode, className? : string, altText : string, onClick? : () => void}) => {
 
 
     return(
         <button
+        onClick={onClick}
         title={altText}
         className={cn(
-            "cursor-pointer w-8 h-8 rounded-md flex items-center justify-center border border-borde transition-colors",
+            "cursor-pointer w-8 h-8 rounded-md flex items-center justify-center border border-border transition-colors",
             className
             )}>
             {children}

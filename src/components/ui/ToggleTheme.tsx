@@ -15,6 +15,8 @@ import {
 export function ThemeToggle() {
   const { setTheme, theme } = useTheme();
 
+  
+
   React.useEffect(() => {
     window.dispatchEvent(new CustomEvent("theme-change", {detail : {theme}}))
   },[theme])

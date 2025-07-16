@@ -1,9 +1,9 @@
-import CanvasLayout from "@/components/ui/canvasLayout";
+import CanvasLayoutWrappedWithProviders from "@/components/ui/canvasLayout";
 
 export default function HomePage() {
   return (
     <div>
-      <CanvasLayout></CanvasLayout>
+      <CanvasLayoutWrappedWithProviders/>
     </div>
   );
 }

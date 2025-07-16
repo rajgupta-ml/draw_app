@@ -8,6 +8,9 @@ import type {
 import type { IShapeRenders } from "@/canvas/shapes/baseClass";
 import { shapeConfig } from "@/constants/canvasConstant";
 import type { Options } from "roughjs/bin/core";
+import type { sidebarType } from "@/context/useSidebar";
+import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext";
+import { strokeColor } from "@/components/ui/configLayout/constant";
 
 export class CanvasManager {
   private interactionBehaviours: typeof InteractionBehaviourList = InteractionBehaviourList;
@@ -23,13 +26,14 @@ export class CanvasManager {
   private minScale: number = 0.1; 
   private maxScale: number = 10; 
   private theme: string | null = null;
-  private config : string | null = null;
+  private config: TextOptionsPlusGeometricOptions | null = null
   constructor(
     private canvas: HTMLCanvasElement, 
     private ctx: CanvasRenderingContext2D, 
     private offScreenCanvas: HTMLCanvasElement, 
     private offScreenCanvasctx: CanvasRenderingContext2D,
     private inputArea : HTMLDivElement,
+    private toggleSidebar : (args : sidebarType | null) => void,
   ) {
     this.theme = window.localStorage.getItem("theme");
     this.theme === "dark" ? shapeConfig.stroke = "white" : shapeConfig.stroke = "black"
@@ -46,8 +50,9 @@ export class CanvasManager {
     this.canvas.addEventListener("mousemove", this.handleMouseMove);
     this.canvas.addEventListener("wheel", this.handleScroll);
     this.canvas.addEventListener("keydown", this.handleKeyPress);
-    window.addEventListener("theme-change", this.handleThemeChange);
-    window.addEventListener("get-config-data", this.handleShapeConfig);
+    window.addEventListener("theme-change", this.handleThemeChange)
+    window.addEventListener("configChange", this.handlefetchConfig);
+  
   };
 
   destroyEventListeners = () => {
@@ -56,21 +61,21 @@ export class CanvasManager {
     this.canvas.removeEventListener("mousemove", this.handleMouseMove);
     this.canvas.removeEventListener("wheel", this.handleScroll);
     this.canvas.removeEventListener("keydown", this.handleKeyPress);
-    window.removeEventListener("theme-change", this.handleThemeChange);
-    window.removeEventListener("get-config-data", this.handleShapeConfig);
+    window.removeEventListener("theme-change", this.handleThemeChange)
+    window.removeEventListener("configChange", this.handlefetchConfig);
+
+
   };
 
 
-  private handleShapeConfig = (event : Event) => {
-    this.config = (event as CustomEvent).detail.config;
+  
+
+  private handlefetchConfig =(event : Event) => {
+    this.config = ((event as CustomEvent).detail.config) as TextOptionsPlusGeometricOptions 
   }
-
-
   private handleThemeChange = (event : Event) => {
-    console.log("Theme change")
     const theme = (event as CustomEvent).detail.theme;
     this.theme = theme;
-    this.theme === "dark" ? shapeConfig.stroke = "white" : shapeConfig.stroke = "black"
     this.drawCanvas({isScrolling : false})
   }
 
@@ -135,6 +140,7 @@ export class CanvasManager {
 
   // Draw and render on canvas method
   drawCanvas = ({ isScrolling }: { isScrolling: boolean }) => {
+    window.dispatchEvent(new Event("get-config-data"))
     const targetCtx = this.offScreenCanvasctx;
     const targetRoughCanvas = this.roughCanvas
     targetCtx.save();
@@ -144,16 +150,16 @@ export class CanvasManager {
     
     targetCtx.scale(this.scale, this.scale);
     targetCtx.translate(-this.scrollPositionX, -this.scrollPositionY);
-
+    
     this.shapes.map((shape) => {
 
       if (shape.config) {
-        const themeDefaultStroke = this.theme === "dark" ? "white" : "black";
+        const themeDefaultStroke = this.theme === "dark" ? strokeColor.dark[0] : strokeColor.light[0];
         if (
-          shape.config.stroke === "#000000" ||
-          shape.config.stroke === "#ffffff"
+          shape.config.stroke === strokeColor.light[0] ||
+          shape.config.stroke === strokeColor.dark[0]
         ) {
-          shape.config.stroke = themeDefaultStroke;
+          shape.config.stroke = themeDefaultStroke as string;
         }
       }
 
@@ -169,8 +175,7 @@ export class CanvasManager {
       const behavior = this.interactionBehaviours.get(this.selectedTool);
       if(behavior && behavior.previewShape){
         // We ask for the config 
-        window.dispatchEvent(new Event("fetch-config"));
-        const config = (this.config ?? shapeConfig) as Options;
+        const config = (this.config ?? shapeConfig) as TextOptionsPlusGeometricOptions;
         behavior.previewShape({roughCanvas : targetRoughCanvas, ctx : targetCtx}, config)
       }
     }
@@ -188,12 +193,16 @@ export class CanvasManager {
     if(this.selectedTool === TOOLS_NAME.HAND){
       this.canvas.style.cursor = "grab"
     }else{
-      window.dispatchEvent(new Event("show-sidebar"))
       this.canvas.style.cursor = "crosshair"
     }
     
-    if(this.selectedTool === TOOLS_NAME.HAND || this.selectedTool === TOOLS_NAME.ERASER){
-      window.dispatchEvent(new Event("hide-sidebar"))
+    if(this.selectedTool == TOOLS_NAME.TEXT){
+      this.toggleSidebar("text")
+    }else if(this.selectedTool === TOOLS_NAME.ERASER || this.selectedTool === TOOLS_NAME.HAND){
+      console.log("I reach here")
+      this.toggleSidebar(null)
+    }else{
+      this.toggleSidebar("geometry");
     }
   };
 

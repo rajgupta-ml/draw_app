@@ -1,4 +1,4 @@
-import { useConfig } from "@/context/configContext";
+import { useConfig } from "@/context/useConfigContext";
 import { useTheme } from "next-themes";
 import { useLayoutEffect, useRef } from "react";
 import { backgroundColor, strokeColor } from "./constant";
@@ -8,6 +8,16 @@ import { ActionButtons, ConfigBarHeading, StrokeColorLayout } from "./common";
 
 
 export const GeometricConfig = () => {
+    const {resolvedTheme} = useTheme();
+    const {config, handleConfigChange} = useConfig()
+    useLayoutEffect(() => {
+        if (resolvedTheme === "light" || resolvedTheme === "dark") {
+            handleConfigChange({...config, fill : backgroundColor[resolvedTheme][0]})
+            handleConfigChange({...config, stroke : strokeColor[resolvedTheme][0]})
+
+        }
+    }, [resolvedTheme]);
+
     return (
         <>
             <StrokeColorLayout></StrokeColorLayout>
@@ -27,26 +37,14 @@ export const GeometricConfig = () => {
 
 const BackgroundColorLayout = () => {
     const { resolvedTheme } = useTheme();
-    const { config, setConfig } = useConfig();
+    const { config, handleConfigChange } = useConfig();
     const backgroundPickerRef = useRef<HTMLInputElement>(null);
 
     // Effect to update fill color when the theme changes.
-    useLayoutEffect(() => {
-        if (resolvedTheme === "light" || resolvedTheme === "dark") {
-            // Set fill to the first color of the new theme's palette
-            setConfig(prevConfig => ({
-                ...prevConfig,
-                fill: backgroundColor[resolvedTheme][0]
-            }));
-        }
-    }, [resolvedTheme, setConfig]);
 
     // Handler for changing background color.
     const handleBackgroundColorChange = (color: string) => {
-        setConfig(prevConfig => ({
-            ...prevConfig,
-            fill: color // Update the fill property in the config
-        }));
+        handleConfigChange({...config, fill : color})
     };
 
     return (
@@ -112,15 +110,12 @@ const BackgroundColorLayout = () => {
 
 
 const StrokeWidthLayout = () => {
-    const { config, setConfig } = useConfig(); // Get config and setConfig from context
+    const { config, handleConfigChange } = useConfig(); // Get config and setConfig from context
     const widths = [1, 2, 3]; // Available stroke widths
 
-    // Handler for changing stroke width.
     const handleWidthChange = (width: number) => {
-        setConfig(prevConfig => ({
-            ...prevConfig,
-            strokeWidth: width // Update the strokeWidth property
-        }));
+        
+        handleConfigChange({...config, strokeWidth : width})
     };
 
     return (
@@ -149,7 +144,7 @@ const StrokeWidthLayout = () => {
 };
 
 const StrokeStyleLayout = () => {
-    const { config, setConfig } = useConfig(); 
+    const { config, handleConfigChange } = useConfig(); 
     const styles = [
         { key: "solid", dash: [], label: "Solid" }, 
         { key: "dotted", dash: [2, 4], label: "Dotted" }, 
@@ -158,11 +153,8 @@ const StrokeStyleLayout = () => {
 
     // Handler for changing stroke style.
     const handleStyleChange = (styleKey: string, dashArray: number[]) => {
-        setConfig(prevConfig => ({
-            ...prevConfig,
-            strokeLineDash: dashArray, 
-            strokeLineDashOffset: 0
-        }));
+        handleConfigChange({...config, strokeLineDash : dashArray, strokeLineDashOffset : 0})
+
     };
 
     const currentStyleKey = styles.find(s =>
@@ -205,14 +197,11 @@ const StrokeStyleLayout = () => {
 };
 
 const RoughnessSliderLayout = () => {
-    const { config, setConfig } = useConfig(); // Get config and setConfig from context
+    const { config, handleConfigChange } = useConfig(); // Get config and setConfig from context
 
     const handleRoughnessChange = (value: number) => {
         const newRoughness = (value / 100) * 2;
-        setConfig(prevConfig => ({
-            ...prevConfig,
-            roughness: newRoughness // Update the roughness property
-        }));
+        handleConfigChange({...config, roughness : newRoughness})
     };
 
     // Calculate the slider value from the current roughness for display.
@@ -237,14 +226,14 @@ const RoughnessSliderLayout = () => {
 };
 
 const FillLayout = () => {
-    const { config, setConfig } = useConfig(); 
+    const { config, handleConfigChange } = useConfig(); 
 
     const handleFillStyleChange = (style: Options['fillStyle']) => {
-        setConfig(prevConfig => ({
-            ...prevConfig,
-            fillStyle: style,
-            fill: (style !== 'none' && prevConfig.fill === 'transparent') ? prevConfig.stroke : prevConfig.fill
-        }));
+        handleConfigChange(
+            {...config, 
+                fillStyle : style, 
+                fill: (style !== 'none' && config.fill === 'transparent') ? config.stroke : config.fill
+            })
     };
 
     return (
@@ -255,7 +244,7 @@ const FillLayout = () => {
                     <button
                         className={cn(
                             "cursor-pointer w-8 h-8 rounded-md flex items-center justify-center border border-gray-300 dark:border-gray-600 transition-colors",
-                            config.fillStyle === "hachure" && config.fill !== "transparent" ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-md" : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                            config.fillStyle === "hachure" && config.fill !== "transparent" ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-md" : "hover:bg-gray-100"
                         )}
                         onClick={() => handleFillStyleChange("hachure")}
                         title="Hachure Fill"
@@ -318,9 +307,7 @@ const FillLayout = () => {
                                 </defs>
                             </svg>
                         </div>
-                    </button>
-
-                    
+                    </button>      
                 </div>
             </div>
         </div>

@@ -7,7 +7,8 @@ import ZoomLayout from "./ZoomLayout";
 import { Loader } from "lucide-react";
 import InputLayout from "./inputLayout";
 import ConfigLayout from "./configLayout";
-import ConfigContextProvider from "@/context/configContext";
+import ConfigContextProvider, { useConfig } from "@/context/useConfigContext";
+import { SidebarContextProvider } from "@/context/useSidebar";
 
 const CanvasLayout = () => {
   const { width = 800, height = 600 } = useWindowDimension(); 
@@ -15,13 +16,16 @@ const CanvasLayout = () => {
   const inputAreaRef = useRef<HTMLDivElement>(null);
   const offScreenCanvasRef = useRef<HTMLCanvasElement>(null);
   const { isLoading, canvasManager, error } = useCanvasManager(canvasRef, offScreenCanvasRef, inputAreaRef);
-
+  const {config, handleConfigChange} = useConfig();
   useEffect(() => {
     if (canvasManager && canvasRef.current) {
       canvasManager.setMaxScroll();
-      canvasManager.drawCanvas({ isScrolling: false });
+      canvasManager.drawCanvas({ isScrolling: false });   
+      // This is to only intial send the config;
+      handleConfigChange({...config});
     }
   }, [width, height, canvasManager]);
+
 
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -29,6 +33,7 @@ const CanvasLayout = () => {
 
   return (
     <>
+
       {isLoading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center">
           <div className="animate-spin">
@@ -78,4 +83,17 @@ const CanvasLayout = () => {
   );
 };
 
-export default CanvasLayout;
+
+
+ const CanvasLayoutWrappedWithProviders = () => {
+  return(
+
+    <SidebarContextProvider>
+      <ConfigContextProvider>
+        <CanvasLayout></CanvasLayout>
+      </ConfigContextProvider>
+    </SidebarContextProvider>
+  )
+}
+
+export default CanvasLayoutWrappedWithProviders;

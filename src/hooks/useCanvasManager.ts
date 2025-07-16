@@ -1,6 +1,8 @@
 // hooks/useCanvasManager.ts
+import { useConfig } from "@/context/useConfigContext";
+import useSidebar from "@/context/useSidebar";
 import { CanvasManager } from "@/manager/CanvasManager";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 export const useCanvasManager = (
   canvasRef: React.RefObject<HTMLCanvasElement | null>, 
@@ -10,6 +12,7 @@ export const useCanvasManager = (
   const [isLoading, setIsLoading] = useState(true);
   const [canvasManager, setCanvasManager] = useState<CanvasManager | null>(null);
   const [error, setError] = useState<Error | null>(null);
+  const {toggleSidebar} = useSidebar()
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -29,7 +32,7 @@ export const useCanvasManager = (
     }
 
     console.log("Initializing CanvasManager with canvas and ctx:", canvas, ctx);
-    const manager = new CanvasManager(canvas, ctx, offscreenCanvas, offscreenCanvasCtx, inputArea);
+    const manager = new CanvasManager(canvas, ctx, offscreenCanvas, offscreenCanvasCtx, inputArea, toggleSidebar);
     manager.addEventListeners();
     setCanvasManager(manager);
     setIsLoading(false);
@@ -39,7 +42,7 @@ export const useCanvasManager = (
       manager.destroyEventListeners();
       setCanvasManager(null);
     };
-  }, [canvasRef]); // Re-run when canvasRef changes
+  }, [canvasRef]); 
 
   return { isLoading, canvasManager, error };
 };

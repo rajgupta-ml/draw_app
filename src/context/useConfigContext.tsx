@@ -1,17 +1,22 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
 import type { Options } from 'roughjs/bin/core'
 
+export type TextOptionsPlusGeometricOptions = Options & {
+  fontFamily : string,
+  fontSize : string,
+  textAlignment : string,
+  fontColor : string,
+}
 type ConfigContextType = {
-  config: Options;
-  setConfig: React.Dispatch<React.SetStateAction<Options>>;
+  config: TextOptionsPlusGeometricOptions;
+  handleConfigChange: (config : TextOptionsPlusGeometricOptions) => void;
 };
 
 const ConfigContext = createContext<ConfigContextType | null>(null);
-
 export const ConfigContextProvider = ({ children }: { children: ReactNode }) => {
-  const [config, setConfig] = useState<Options>({
+  const [config, setConfig] = useState<TextOptionsPlusGeometricOptions>({
     maxRandomnessOffset: 2,
-    roughness: 1, 
+    roughness: 0, 
     bowing: 1,
     stroke: '#000000', 
     strokeWidth: 1, 
@@ -37,10 +42,18 @@ export const ConfigContextProvider = ({ children }: { children: ReactNode }) => 
     preserveVertices: false,
     fixedDecimalPlaceDigits: 2,
     fillShapeRoughnessGain: 1,
+    fontFamily : "Arial",
+    fontSize : "12px",
+    textAlignment : "left",
+    fontColor : "",
 });
+  const handleConfigChange = (config : TextOptionsPlusGeometricOptions) => {
+    setConfig(config);
+    window.dispatchEvent(new CustomEvent("configChange", {detail : {config}}))
+  }
 
   return (
-    <ConfigContext.Provider value={{ config, setConfig }}>
+    <ConfigContext.Provider value={{ config, handleConfigChange }}>
       {children}
     </ConfigContext.Provider>
   );
