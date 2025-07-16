@@ -30,27 +30,32 @@ export class RemoveShapeCommand implements ICommand {
   operationId: CommnadOperationId;
   operationNumber = 0;
   private shape: Shape;
-  private originalIndex: number;
+  private originalIndex: number | null = null;
 
   constructor(
     private manager: CanvasManager,
     shape: Shape,
-    originalIndex: number,
+    originalIndex?: number,
   ) {
-    this.operationId = CommnadOperationId.ADD_SHAPE;
+    this.operationId = CommnadOperationId.REMOVE_SHAPE; 
     this.shape = structuredClone(shape);
-    this.originalIndex = originalIndex;
+    this.originalIndex = originalIndex ?? null;
   }
+
   execute = () => {
     const index = this.manager.shapes.findIndex((s) => s.id === this.shape.id);
     if (index !== -1) {
+      this.originalIndex ??=index
       this.manager.shapes.splice(index, 1);
     }
     this.manager.drawCanvas(true);
   };
+
   undo = () => {
-    this.manager.shapes.splice(this.originalIndex, 0, this.shape);
-    this.manager.drawCanvas();
+    if (this.originalIndex !== null) {
+      this.manager.shapes.splice(this.originalIndex, 0, this.shape);
+      this.manager.drawCanvas();
+    }
   };
 }
 

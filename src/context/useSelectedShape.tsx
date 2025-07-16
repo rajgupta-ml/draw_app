@@ -1,5 +1,4 @@
 import type { Shape } from "@/types/canvasTypes";
-import { Preahvihear } from "next/font/google";
 import React, {
   createContext,
   useContext,

@@ -10,7 +10,6 @@ import type {
   BehaviorContext,
   IInteractionBehavior,
 } from "../InteractionBehaviour/baseclass";
-import type { Options } from "roughjs/bin/core";
 import { AddShapeCommand } from "../UndoAndRedoCmd/ShapeCommand";
 import type { CanvasManager } from "@/manager/CanvasManager";
 import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext";
