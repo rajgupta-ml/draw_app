@@ -23,6 +23,7 @@ export const ConfigContextProvider = ({
 }) => {
   const [config, setConfig] =
     useState<TextOptionsPlusGeometricOptions>(DEFAULT_CONFIG);
+
   const handleConfigChange = (config: TextOptionsPlusGeometricOptions) => {
     setConfig(config);
     window.dispatchEvent(

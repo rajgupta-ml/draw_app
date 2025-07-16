@@ -13,6 +13,7 @@ import type {
 import type { Options } from "roughjs/bin/core";
 import { AddShapeCommand } from "../UndoAndRedoCmd/ShapeCommand";
 import type { CanvasManager } from "@/manager/CanvasManager";
+import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext";
 type GeometricShape =
   | RectShape
   | EclipseShape
@@ -49,8 +50,9 @@ export class GeometricBehaviour<T extends GeometricShape>
     this.clicked = false;
     if (this.dragged && this.shapeRenders) {
       const newShape = this.shapeRenders.createShape(this.currentPosition);
-      const config = manager.config;
-      const newShapeWithConfig = { ...newShape, config };
+      const updatedConfig = {...manager.config};
+      console.log("UpdatedConfig" , updatedConfig)
+      const newShapeWithConfig = { ...newShape,  config : updatedConfig };
       executeCanvasCommnad(new AddShapeCommand(manager, newShapeWithConfig));
       drawCanvas();
     }
@@ -62,7 +64,7 @@ export class GeometricBehaviour<T extends GeometricShape>
       this.shapeRenders.render(shape, roughCanvas, offScreenCanvasctx);
     }
   }
-  previewShape(manager: CanvasManager, config: Options): void {
+  previewShape(manager: CanvasManager, config: TextOptionsPlusGeometricOptions): void {
     const { roughCanvas, offScreenCanvasctx } = manager;
 
     if (this.shapeRenders && this.dragged) {

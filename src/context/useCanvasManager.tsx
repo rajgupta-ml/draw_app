@@ -8,6 +8,7 @@ import React, {
 import { CanvasManager } from "@/manager/CanvasManager";
 import useSidebar from "@/context/useSidebar";
 import { useConfig } from "@/context/useConfigContext";
+import { useTheme } from "next-themes";
 
 interface CanvasManagerContextType {
   canvasManager: CanvasManager | null;
@@ -49,7 +50,7 @@ export const CanvasManagerProvider: React.FC<CanvasManagerProviderProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const offscreenCanvasRef = useRef<HTMLCanvasElement>(null);
   const inputAreaRef = useRef<HTMLDivElement>(null);
-
+  const {theme} = useTheme();
   const { toggleSidebar } = useSidebar();
   const { config } = useConfig();
 
@@ -82,6 +83,7 @@ export const CanvasManagerProvider: React.FC<CanvasManagerProviderProps> = ({
           offscreenCanvasCtx,
           inputArea,
           config,
+          theme!,
           toggleSidebar,
         );
         canvas.width = window.innerWidth;

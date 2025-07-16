@@ -26,7 +26,6 @@ export class CanvasManager {
   config: TextOptionsPlusGeometricOptions;
   selectedTool: TOOLS_NAME;
   scale = 1;
-  theme: string | null = null;
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   offScreenCanvas: HTMLCanvasElement;
@@ -50,6 +49,7 @@ export class CanvasManager {
     offScreenCanvasctx: CanvasRenderingContext2D,
     inputArea: HTMLDivElement,
     config: TextOptionsPlusGeometricOptions,
+    private theme : string,
     private toggleSidebar: (args: sidebarType | null) => void,
   ) {
     this.config = config;
@@ -58,12 +58,6 @@ export class CanvasManager {
     this.offScreenCanvas = offScreenCanvas;
     this.offScreenCanvasctx = offScreenCanvasctx;
     this.inputArea = inputArea;
-    this.theme = window.localStorage.getItem("theme");
-    if (this.theme === "dark") {
-      shapeConfig.stroke = "white";
-    } else {
-      shapeConfig.stroke = "black";
-    }
     this.roughCanvas = new RoughCanvas(this.offScreenCanvas);
     this.selectedTool = TOOLS_NAME.RECT;
     this.canvas.style.cursor = "crosshair";
