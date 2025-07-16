@@ -27,7 +27,7 @@ export class CanvasManager {
   offScreenCanvas: HTMLCanvasElement; 
   offScreenCanvasctx: CanvasRenderingContext2D;
   inputArea : HTMLDivElement;
-  selectedShape : Shape[] = [];
+  private _selectedShape : Shape[] = [];
   private interactionBehaviours: typeof InteractionBehaviourList = InteractionBehaviourList;
   private undoStack : ICommand[] = [];
   private redoStack : ICommand[] = [];
@@ -229,6 +229,20 @@ export class CanvasManager {
   getTool = (): TOOLS_NAME => {
     return this.selectedTool;
   };
+
+  get selectedShape() : Shape[] {
+    return this._selectedShape
+  }
+
+  set setSelectedShape (shape : Shape[]) {
+    console.log("prev ref",this._selectedShape)
+    this._selectedShape = [...shape];
+    console.log("after ref",this._selectedShape)
+
+    
+  }
+
+
 
   getShape = () : Shape[] => {
     return this.shapes

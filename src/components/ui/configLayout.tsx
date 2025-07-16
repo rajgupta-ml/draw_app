@@ -7,18 +7,25 @@ import { TextConfig } from './configLayout/TextConfigLayout';
 import { useTheme } from 'next-themes';
 import { strokeColor } from './configLayout/constant';
 import { useSelectedShape } from '@/context/useSelectedShape';
+import { useCanvasManagerContext } from '@/context/useCanvasManager';
+import { UpdateCommand } from '@/canvas/UndoAndRedoCmd/ShapeCommand';
 
 
 const ConfigLayout = () => {
     const {config, handleConfigChange, setConfig} = useConfig();
+    const {canvasManager} = useCanvasManagerContext();
+    const {executeCmd} = canvasManager;
     const {showSidebar} = useSidebar();
     const {resolvedTheme} = useTheme();
     const {selectedShape} = useSelectedShape();
+
+
 
     useEffect(() => {
         handleConfigChange({...config, stroke : resolvedTheme === "dark" ?  strokeColor.dark[0] : strokeColor.light[0],
         })
     },[resolvedTheme]);
+    
     
     useEffect(() => {
         if (selectedShape && selectedShape.config) {
@@ -32,8 +39,7 @@ const ConfigLayout = () => {
 
     useEffect(() => {
         if(selectedShape && selectedShape.config){
-            selectedShape.config = {...config}
-            window.dispatchEvent(new Event("requestRedraw"))
+            executeCmd(new UpdateCommand(canvasManager, selectedShape, config))
         }
     },[config])
     if (showSidebar === null) return null;

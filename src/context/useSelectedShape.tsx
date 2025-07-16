@@ -13,7 +13,7 @@ export const SelectedShapeProvider = ({ children }: { children: ReactNode }) => 
 
   useEffect(() => {
     const handleSelectedShape = (e: Event) => {
-      const selectedShapes = (e as CustomEvent).detail.selectedShapes
+      const selectedShapes = (e as CustomEvent).detail.selectedShapes as Shape
       setSelectedShape(selectedShapes)
     }
     window.addEventListener('selectShape', handleSelectedShape)

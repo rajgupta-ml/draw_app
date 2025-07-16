@@ -86,11 +86,12 @@ export class SelectionBehavior implements IInteractionBehavior {
         );
         drawCanvas();
         if(this.selectedShapes.length > 0){
-          manager.selectedShape = this.selectedShapes;
+         
+
           // Write now edit can only be done on single shape not in group
           window.dispatchEvent(new CustomEvent("selectShape", {detail : {selectedShapes : this.selectedShapes[0] }}))
         }
-          return;
+        return;
       }
     }
 
@@ -109,7 +110,7 @@ export class SelectionBehavior implements IInteractionBehavior {
     isPointInShape,
     manager
   }: BehaviorContext): void {
-    const {offScreenCanvasctx, offScreenCanvas, shapes, drawCanvas} = manager
+    const {offScreenCanvasctx, canvas, shapes, drawCanvas} = manager
     this.ctx = offScreenCanvasctx;
     const dx = x - this.initialMousePosition.x;
     const dy = y - this.initialMousePosition.y;
@@ -124,19 +125,19 @@ export class SelectionBehavior implements IInteractionBehavior {
         switch (handle.position) {
           case "topLeft":
           case "bottomRight":
-            offScreenCanvas.style.cursor = "nwse-resize";
+            canvas.style.cursor = "nwse-resize";
             break;
           case "topRight":
           case "bottomLeft":
-            offScreenCanvas.style.cursor = "nesw-resize";
+            canvas.style.cursor = "nesw-resize";
             break;
           case "top":
           case "bottom":
-            offScreenCanvas.style.cursor = "ns-resize";
+            canvas.style.cursor = "ns-resize";
             break;
           case "left":
           case "right":
-            offScreenCanvas.style.cursor = "ew-resize";
+            canvas.style.cursor = "ew-resize";
             break;
         }
         cursorChanged = true;
@@ -144,13 +145,13 @@ export class SelectionBehavior implements IInteractionBehavior {
         this.selectionBox &&
         this.isPointInBox(x, y, this.selectionBox)
       ) {
-        offScreenCanvas.style.cursor = "move";
+        canvas.style.cursor = "move";
         cursorChanged = true;
       } else {
         for (let i = shapes.length - 1; i >= 0; i--) {
           const shape = shapes[i]!;
           if (isPointInShape(shape, x, y)) {
-            offScreenCanvas.style.cursor = "grab";
+            canvas.style.cursor = "grab";
             cursorChanged = true;
             break;
           }
@@ -160,32 +161,32 @@ export class SelectionBehavior implements IInteractionBehavior {
       switch (this.clickedResizeHandle) {
         case "topLeft":
         case "bottomRight":
-          offScreenCanvas.style.cursor = "nwse-resize";
+          canvas.style.cursor = "nwse-resize";
           break;
         case "topRight":
         case "bottomLeft":
-          offScreenCanvas.style.cursor = "nesw-resize";
+          canvas.style.cursor = "nesw-resize";
           break;
         case "top":
         case "bottom":
-          offScreenCanvas.style.cursor = "ns-resize";
+          canvas.style.cursor = "ns-resize";
           break;
         case "left":
         case "right":
-          offScreenCanvas.style.cursor = "ew-resize";
+          canvas.style.cursor = "ew-resize";
           break;
       }
       cursorChanged = true;
     } else if (this.currentAction === "MOVING") {
-      offScreenCanvas.style.cursor = "grabbing";
+      canvas.style.cursor = "grabbing";
       cursorChanged = true;
     } else if (this.currentAction === "SELECTING_AREA") {
-      offScreenCanvas.style.cursor = "crosshair";
+      canvas.style.cursor = "crosshair";
       cursorChanged = true;
     }
 
     if (!cursorChanged) {
-      offScreenCanvas.style.cursor = "default";
+      canvas.style.cursor = "default";
     }
 
     switch (this.currentAction) {
@@ -215,6 +216,10 @@ export class SelectionBehavior implements IInteractionBehavior {
     this.ctx = offScreenCanvasctx;
     if (this.currentAction === "SELECTING_AREA" && this.selectionArea) {
       this.selectShapesInArea(shapes);
+      if(this.selectedShapes.length > 0){
+        window.dispatchEvent(new CustomEvent("selectShape", {detail : {selectedShapes : this.selectedShapes[0] }}))
+      }
+
     }
     this.currentAction = "IDLE";
     this.clickedResizeHandle = null;
@@ -715,6 +720,7 @@ export class SelectionBehavior implements IInteractionBehavior {
         shapeMinY = Math.min(...bounds.allY),
         shapeMaxX = Math.max(...bounds.allX),
         shapeMaxY = Math.max(...bounds.allY);
+
       return (
         shapeMinX < selMaxX &&
         shapeMaxX > selMinX &&
