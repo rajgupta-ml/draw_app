@@ -1,4 +1,5 @@
 import type { Shape } from "@/types/canvasTypes";
+import { Preahvihear } from "next/font/google";
 import React, {
   createContext,
   useContext,
@@ -30,11 +31,19 @@ export const SelectedShapeProvider = ({
     const handleSelectedShape = (e: Event) => {
       const selectedShapes = (e as CustomEvent<ShapeSelectedEventDetail>).detail
         .selectedShapes;
-      setSelectedShape(selectedShapes);
+      setSelectedShape(selectedShapes)
     };
+
+    const handleUnselectShape = () => {
+      console.log("I reach herre")
+      setSelectedShape(null);
+    }
     window.addEventListener("selectShape", handleSelectedShape);
+    window.addEventListener("no-shape-selected", handleUnselectShape)
     return () => {
       window.removeEventListener("selectShape", handleSelectedShape);
+      window.removeEventListener("no-shape-selected", handleUnselectShape)
+
     };
   }, []);
 

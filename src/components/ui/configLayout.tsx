@@ -1,5 +1,5 @@
 "use clients";
-import React, { useEffect, type ReactNode } from "react";
+import React, { useEffect, useRef, type ReactNode } from "react";
 import {
   useConfig,
   type TextOptionsPlusGeometricOptions,
@@ -20,6 +20,7 @@ const ConfigLayout = () => {
   const { showSidebar } = useSidebar();
   const { resolvedTheme } = useTheme();
   const { selectedShape } = useSelectedShape();
+  const prevConfig = useRef<TextOptionsPlusGeometricOptions | null>(null)
 
   useEffect(() => {
     handleConfigChange({
@@ -30,18 +31,27 @@ const ConfigLayout = () => {
   }, [resolvedTheme]);
 
   useEffect(() => {
+    prevConfig.current =selectedShape?.config ?? null;
     if (selectedShape && selectedShape.config) {
+      console.log("New Config", selectedShape.config);
       setConfig((prevConfig: TextOptionsPlusGeometricOptions) => ({
         ...prevConfig,
         ...selectedShape.config,
       }));
     }
-  }, [selectedShape, setConfig]);
+
+    console.log(selectedShape)
+  }, [selectedShape]);
 
   useEffect(() => {
+
+    if (JSON.stringify(prevConfig.current) === JSON.stringify(config)) {
+      return;
+    }
     if (selectedShape && selectedShape.config) {
       executeCmd(new UpdateCommand(canvasManager, selectedShape, config));
     }
+    prevConfig.current = config;
   }, [config]);
 
   if (showSidebar === null) return null;

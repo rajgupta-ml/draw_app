@@ -1,20 +1,9 @@
-import { useTheme } from "next-themes";
 import { Button, ConfigBarHeading, StrokeColorLayout } from "./common";
 import { useConfig } from "@/context/useConfigContext";
 import { AlignCenter, AlignLeft, AlignRight, Code, Pen } from "lucide-react";
 import { Alphabet } from "../Icon/Alphabet";
-import { useLayoutEffect } from "react";
-import { strokeColor } from "./constant";
 
 export const TextConfig = () => {
-  const { handleConfigChange, config } = useConfig();
-  const { resolvedTheme } = useTheme();
-  useLayoutEffect(() => {
-    if (resolvedTheme === "light" || resolvedTheme === "dark") {
-      handleConfigChange({ ...config, fill: strokeColor[resolvedTheme][0] });
-      handleConfigChange({ ...config, stroke: strokeColor[resolvedTheme][0] });
-    }
-  }, [resolvedTheme]);
 
   return (
     <>
@@ -74,32 +63,33 @@ const FontFamily = () => {
     </div>
   );
 };
-type FontSizeType = "12px" | "16px" | "24px" | "32px";
+type FontSizeType = "12" | "16" | "24" | "32";
 const FontSize = () => {
   const { config, handleConfigChange } = useConfig();
   const handleFontSizeChange = (data: FontSizeType) => {
     handleConfigChange({ ...config, fontSize: data });
   };
+
   const buttons = [
     {
       component: "S",
       altText: "small",
-      fontSize: "12px",
+      fontSize: "12",
     },
     {
       component: "M",
       altText: "Medium",
-      fontSize: "16px",
+      fontSize: "16",
     },
     {
       component: "L",
       altText: "large",
-      fontSize: "24px",
+      fontSize: "24",
     },
     {
       component: "XL",
       altText: "extra large",
-      fontSize: "32px",
+      fontSize: "32",
     },
   ];
 

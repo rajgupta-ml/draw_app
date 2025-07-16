@@ -31,6 +31,7 @@ export class CanvasManager {
   offScreenCanvas: HTMLCanvasElement;
   offScreenCanvasctx: CanvasRenderingContext2D;
   inputArea: HTMLDivElement;
+  toggleSidebar : (args: sidebarType | null) => void
   private interactionBehaviours: typeof InteractionBehaviourList =
     InteractionBehaviourList;
   private undoStack: ICommand[] = [];
@@ -50,7 +51,7 @@ export class CanvasManager {
     inputArea: HTMLDivElement,
     config: TextOptionsPlusGeometricOptions,
     private theme : string,
-    private toggleSidebar: (args: sidebarType | null) => void,
+    toggleSidebar: (args: sidebarType | null) => void,
   ) {
     this.config = config;
     this.canvas = canvas;
@@ -62,6 +63,7 @@ export class CanvasManager {
     this.config.stroke = this.theme === "dark" ? strokeColor.dark[0] : strokeColor.light[0]; 
     this.selectedTool = TOOLS_NAME.RECT;
     this.canvas.style.cursor = "crosshair";
+    this.toggleSidebar = toggleSidebar
     canvas.focus();
   }
   // Add And Remove Event Listner
@@ -213,7 +215,6 @@ export class CanvasManager {
     if (!isScrolling) {
       const behavior = this.interactionBehaviours.get(this.selectedTool);
       if (behavior?.previewShape) {
-        // We ask for the config
         const config = this.config ?? shapeConfig;
         behavior.previewShape(this, config);
       }
@@ -238,9 +239,9 @@ export class CanvasManager {
       this.toggleSidebar("text");
     } else if (
       this.selectedTool === TOOLS_NAME.ERASER ||
-      this.selectedTool === TOOLS_NAME.HAND
+      this.selectedTool === TOOLS_NAME.HAND ||
+      this.selectedTool === TOOLS_NAME.MOUSE
     ) {
-      console.log("I reach here");
       this.toggleSidebar(null);
     } else {
       this.toggleSidebar("geometry");
@@ -258,7 +259,7 @@ export class CanvasManager {
     if (this.undoStack.length > this.maxHistorySize) {
       this.undoStack.shift();
     }
-    console.log("undoStack: ", this.undoStack);
+    // console.log("undoStack: ", this.undoStack);
   };
   undo = () => {
     if (this.undoStack.length > 0) {

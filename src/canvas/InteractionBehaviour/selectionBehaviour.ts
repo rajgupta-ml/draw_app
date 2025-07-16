@@ -86,9 +86,23 @@ export class SelectionBehavior implements IInteractionBehavior {
         drawCanvas();
         if (this.selectedShapes.length > 0) {
           // Write now edit can only be done on single shape not in group
+          const currentSelectedConfig = this.selectedShapes[0]
+          const updatedConfig = {
+            ...currentSelectedConfig,
+            config : {
+              ...currentSelectedConfig?.config,
+            }
+          }
+
+
+          if(currentSelectedConfig?.type === TOOLS_NAME.TEXT){
+            manager.toggleSidebar("text")
+          }else{
+            manager.toggleSidebar("geometry");
+          }
           window.dispatchEvent(
             new CustomEvent("selectShape", {
-              detail: { selectedShapes: this.selectedShapes[0] },
+              detail: { selectedShapes: updatedConfig },
             }),
           );
         }
@@ -96,6 +110,8 @@ export class SelectionBehavior implements IInteractionBehavior {
       }
     }
 
+
+    window.dispatchEvent(new Event("no-shape-selected"))
     this.selectedShapes = [];
     this.selectionBox = null;
     this.resizeHandles = [];
@@ -210,13 +226,26 @@ export class SelectionBehavior implements IInteractionBehavior {
     this.ctx = offScreenCanvasctx;
     if (this.currentAction === "SELECTING_AREA" && this.selectionArea) {
       this.selectShapesInArea(shapes);
-      if (this.selectedShapes.length > 0) {
-        window.dispatchEvent(
-          new CustomEvent("selectShape", {
-            detail: { selectedShapes: this.selectedShapes[0] },
-          }),
-        );
-      }
+
+      const currentSelectedConfig = this.selectedShapes[0]
+          const updatedConfig = {
+            ...currentSelectedConfig,
+            config : {
+              ...currentSelectedConfig?.config,
+            }
+          }
+
+          // if(currentSelectedConfig?.type === TOOLS_NAME.TEXT){
+          //   manager.toggleSidebar("text")
+          // }else{
+          //   manager.toggleSidebar("geometry");
+          // }
+
+          window.dispatchEvent(
+            new CustomEvent("selectShape", {
+              detail: { selectedShapes: updatedConfig },
+            }),
+          );
     }
     this.currentAction = "IDLE";
     this.clickedResizeHandle = null;
@@ -547,7 +576,8 @@ export class SelectionBehavior implements IInteractionBehavior {
             1,
             Math.round(originalFontSize * scaleFactor),
           );
-          textShape.config.fontSize = `${newFontSize}px`;
+
+          textShape.config.fontSize = `${newFontSize}`;
 
           // Recalculate width using the new font size
           if (this.ctx) {
