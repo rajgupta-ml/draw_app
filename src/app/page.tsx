@@ -1,9 +1,10 @@
 import CanvasLayoutWrappedWithProviders from "@/components/ui/canvasLayout";
-
-export default function HomePage() {
+export default async function HomePage({params} : {params: {id : Promise<string>}}) {
+  
   return (
     <div>
-      <CanvasLayoutWrappedWithProviders />
+        <CanvasLayoutWrappedWithProviders />
+
     </div>
   );
 }

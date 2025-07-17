@@ -13,9 +13,16 @@ import {
   CanvasManagerProvider,
   useCanvasManagerContext,
 } from "@/context/useCanvasManager";
+import axios from "axios"
+import ShareButton from "./ShareButton";
+import { ThemeToggle } from "./ToggleTheme";
+import { QueryClient, QueryClientProvider, useMutation, useQueries, useQuery, type QueryFunctionContext } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
+import { QUERY } from "@/api/shareableApi";
 
-const CanvasLayout = () => {
+const CanvasLayout = ({id} : {id  :string | null}) => {
   const { width, height } = useWindowDimension();
+  const {getShapeData} = QUERY;
   const {
     canvasManager,
     canvasRef,
@@ -24,6 +31,18 @@ const CanvasLayout = () => {
     error,
     isLoading,
   } = useCanvasManagerContext();
+
+  
+
+  const { data } = useQuery({
+      queryKey: ['shapeData', id],
+      queryFn: getShapeData,
+      enabled: !!id,
+      staleTime: 0,     
+      refetchOnMount: true,
+      refetchOnWindowFocus: false,
+  });
+
 
   useEffect(() => {
     if (
@@ -45,9 +64,15 @@ const CanvasLayout = () => {
 
   useEffect(() => {
     if (canvasManager && canvasRef.current) {
+      // Get the data and set the shapes
+      // Check if there is something is localstroage if there is open a warning box
+      if(data){
+        const shapeData = JSON.parse(data.json)
+        canvasManager.shapes = shapeData;
+      }
       canvasManager.setMaxScroll();
     }
-  }, [canvasManager, canvasRef]); // Only depend on canvasManager
+  }, [canvasManager, canvasRef, data]); 
 
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -82,6 +107,10 @@ const CanvasLayout = () => {
 
         {canvasManager && (
           <>
+          <div className="absolute top-5 right-20 z-10 flex items-center gap-4 ">
+            <ThemeToggle></ThemeToggle>
+            <ShareButton></ShareButton>
+          </div>
             <Toolbar />
             <ZoomLayout />
             <ConfigLayout></ConfigLayout>
@@ -93,16 +122,23 @@ const CanvasLayout = () => {
 };
 
 const CanvasLayoutWrappedWithProviders = () => {
+  const queryClient = new QueryClient()
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id")
+
   return (
+    <QueryClientProvider client={queryClient}>
+
     <SidebarContextProvider>
       <ConfigContextProvider>
         <CanvasManagerProvider>
           <SelectedShapeProvider>
-            <CanvasLayout></CanvasLayout>
+            <CanvasLayout id = {id}></CanvasLayout>
           </SelectedShapeProvider>
         </CanvasManagerProvider>
       </ConfigContextProvider>
     </SidebarContextProvider>
+    </QueryClientProvider>
   );
 };
 

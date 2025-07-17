@@ -42,6 +42,6 @@ export const DEFAULT_CONFIG = {
   fixedDecimalPlaceDigits: 2,
   fillShapeRoughnessGain: 1,
   fontFamily: "Arial",
-  fontSize: "12px",
+  fontSize: "12",
   textAlignment: "left",
 };

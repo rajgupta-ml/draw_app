@@ -48,8 +48,8 @@ const FontFamily = () => {
             <Button
               className={`${
                 config.fontFamily === data.fontFamily
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-md"
-                  : "hover:bg-accent hover:text-accent-foreground"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-md w-8 h-8"
+                  : "hover:bg-accent hover:text-accent-foreground w-8 h-8"
               } `}
               altText={data.altText}
               key={data.fontFamily}
@@ -106,8 +106,8 @@ const FontSize = () => {
               }
               className={`${
                 data.fontSize === config.fontSize
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground text-xs shadow-md"
-                  : "hover:bg-accent hover:text-accent-foreground text-xs"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground text-xs shadow-md w-8 h-8"
+                  : "hover:bg-accent hover:text-accent-foreground text-xs w-8 h-8"
               } `}
               altText={data.altText}
               key={data.fontSize}
@@ -156,8 +156,8 @@ const TextAlign = () => {
             <Button
               className={`${
                 data.align === config.textAlignment
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-md"
-                  : "hover:bg-accent hover:text-accent-foreground"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-md w-8 h-8"
+                  : "hover:bg-accent hover:text-accent-foreground h-8 w-8"
               } `}
               altText={data.altText}
               key={data.align}
