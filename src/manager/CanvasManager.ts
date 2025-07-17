@@ -64,6 +64,7 @@ export class CanvasManager {
     this.selectedTool = TOOLS_NAME.RECT;
     this.canvas.style.cursor = "crosshair";
     this.toggleSidebar = toggleSidebar
+    this.getShapeDataFromLocalStorage();
     canvas.focus();
   }
   // Add And Remove Event Listner
@@ -98,6 +99,26 @@ export class CanvasManager {
       this.handlefetchConfig as EventListener,
     );
   };
+
+
+  private getShapeDataFromLocalStorage = () => {
+    const shapedata = window.localStorage.getItem("shape");
+    if(shapedata){
+      this.shapes = JSON.parse(shapedata)
+    }
+  }
+
+
+  private persistShapeDataInLocalStorage = () => {
+    const shapedata = window.localStorage.getItem("shape");
+
+    if(this.shapes.length > 0){
+      if(JSON.stringify(this.shapes) === shapedata) return;
+      else{
+        window.localStorage.setItem("shape", JSON.stringify(this.shapes))
+      }
+    }
+  }
 
   private handlefetchConfig = (event: Event) => {
     this.config = (event as CustomEvent<IConfigEventDetail>).detail.config;
@@ -178,7 +199,7 @@ export class CanvasManager {
   // Draw and render on canvas method
   drawCanvas = (isScrolling = false) => {
     this.offScreenCanvasctx.save();
-
+    
     this.offScreenCanvasctx.resetTransform();
     this.offScreenCanvasctx.clearRect(
       0,
@@ -186,7 +207,7 @@ export class CanvasManager {
       this.canvas.width,
       this.canvas.height,
     );
-
+    
     this.offScreenCanvasctx.scale(this.scale, this.scale);
     this.offScreenCanvasctx.translate(
       -this.scrollPositionX,
@@ -223,6 +244,7 @@ export class CanvasManager {
 
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.drawImage(this.offScreenCanvas, 0, 0);
+    this.persistShapeDataInLocalStorage()
   };
 
   // Setter and Getter Methods

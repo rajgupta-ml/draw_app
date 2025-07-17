@@ -50,7 +50,6 @@ export class GeometricBehaviour<T extends GeometricShape>
     if (this.dragged && this.shapeRenders) {
       const newShape = this.shapeRenders.createShape(this.currentPosition);
       const updatedConfig = {...manager.config};
-      console.log("UpdatedConfig" , updatedConfig)
       const newShapeWithConfig = { ...newShape,  config : updatedConfig };
       executeCanvasCommnad(new AddShapeCommand(manager, newShapeWithConfig));
       drawCanvas();

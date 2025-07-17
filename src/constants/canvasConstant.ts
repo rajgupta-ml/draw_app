@@ -17,7 +17,7 @@ export const DEFAULT_CONFIG = {
   maxRandomnessOffset: 2,
   roughness: 0,
   bowing: 1,
-  stroke: "#000000",
+  stroke: "#ffffff",
   strokeWidth: 1,
   curveFitting: 0.95,
   curveTightness: 0,
