@@ -1,6 +1,6 @@
 "use client";
 import { useWindowDimension } from "@/hooks/useWindowDimension";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Toolbar from "./Toolbar";
 import ZoomLayout from "./ZoomLayout";
 import { Loader } from "lucide-react";
@@ -13,15 +13,18 @@ import {
   CanvasManagerProvider,
   useCanvasManagerContext,
 } from "@/context/useCanvasManager";
-import axios from "axios"
 import ShareButton from "./ShareButton";
 import { ThemeToggle } from "./ToggleTheme";
-import { QueryClient, QueryClientProvider, useMutation, useQueries, useQuery, type QueryFunctionContext } from "@tanstack/react-query";
-import { useSearchParams } from "next/navigation";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { usePathname, useSearchParams } from "next/navigation";
 import { QUERY } from "@/api/shareableApi";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./dialog";
+import WarningDialog from "./WarningDialog";
 
 const CanvasLayout = ({id} : {id  :string | null}) => {
   const { width, height } = useWindowDimension();
+  const [warning, setWarning] = useState(false);
+  const pathname = usePathname();
   const {getShapeData} = QUERY;
   const {
     canvasManager,
@@ -57,6 +60,7 @@ const CanvasLayout = ({id} : {id  :string | null}) => {
       offscreenCanvasRef.current.width = width;
       offscreenCanvasRef.current.height = height;
 
+
       canvasManager.setMaxScroll();
       canvasManager.drawCanvas();
     }
@@ -67,12 +71,28 @@ const CanvasLayout = ({id} : {id  :string | null}) => {
       // Get the data and set the shapes
       // Check if there is something is localstroage if there is open a warning box
       if(data){
-        const shapeData = JSON.parse(data.json)
-        canvasManager.shapes = shapeData;
+        const oldShape = window.localStorage.getItem("shape");
+        if(oldShape){
+          setWarning(true);
+          const shapeData = JSON.parse(data.json)
+          canvasManager.shapes = shapeData;
+        }
       }
       canvasManager.setMaxScroll();
     }
   }, [canvasManager, canvasRef, data]); 
+
+  const handleDelete = () => {
+    window.localStorage.removeItem("shape");
+    const shapeData = JSON.parse(data.json)
+    if(shapeData){
+      canvasManager.shapes = shapeData;
+      canvasManager.drawCanvas();
+    }
+    setWarning(false);
+  }
+
+  
 
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -80,6 +100,7 @@ const CanvasLayout = ({id} : {id  :string | null}) => {
 
   return (
     <>
+    <WarningDialog handleDelete={handleDelete} setWarning={setWarning} warning={warning}></WarningDialog>
       {isLoading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center">
           <div className="animate-spin">
@@ -87,7 +108,8 @@ const CanvasLayout = ({id} : {id  :string | null}) => {
           </div>
         </div>
       )}
-      <div className="overflow-hidden overflow-y-hidden">
+
+        <div className="overflow-hidden overflow-y-hidden">
         <InputLayout ref={inputAreaRef}></InputLayout>
 
         <canvas
@@ -117,6 +139,7 @@ const CanvasLayout = ({id} : {id  :string | null}) => {
           </>
         )}
       </div>
+  
     </>
   );
 };
