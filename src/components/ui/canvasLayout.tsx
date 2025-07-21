@@ -16,15 +16,15 @@ import {
 import ShareButton from "./ShareButton";
 import { ThemeToggle } from "./ToggleTheme";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { QUERY } from "@/api/shareableApi";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./dialog";
 import WarningDialog from "./WarningDialog";
+import socketManager, { SocketManager } from "@/manager/socketManager";
+import { generateMessage } from "@/lib/generateMessge";
 
-const CanvasLayout = ({id} : {id  :string | null}) => {
+const CanvasLayout = ({id, roomId} : {id  :string | null, roomId : string | null}) => {
   const { width, height } = useWindowDimension();
   const [warning, setWarning] = useState(false);
-  const pathname = usePathname();
   const {getShapeData} = QUERY;
   const {
     canvasManager,
@@ -40,12 +40,31 @@ const CanvasLayout = ({id} : {id  :string | null}) => {
   const { data } = useQuery({
       queryKey: ['shapeData', id],
       queryFn: getShapeData,
-      enabled: !!id,
+      enabled: !!id ,
       staleTime: 0,     
       refetchOnMount: true,
       refetchOnWindowFocus: false,
   });
 
+  const {data : RoomShapeData} = useQuery({
+    queryKey: ['shapeData', roomId],
+    queryFn: getShapeData,
+    enabled: !!roomId ,
+    staleTime: 0,     
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+  })
+  useEffect(() => {
+    if(!roomId) return;
+    socketManager.setName = "new-user",
+    socketManager.setRoomId = roomId
+    socketManager.joinRoom();
+    console.log(RoomShapeData)
+    if(RoomShapeData && canvasManager){
+      canvasManager.shapes = JSON.parse(RoomShapeData.json)
+    }
+
+  },[canvasManager, data, canvasRef])
 
   useEffect(() => {
     if (
@@ -68,8 +87,6 @@ const CanvasLayout = ({id} : {id  :string | null}) => {
 
   useEffect(() => {
     if (canvasManager && canvasRef.current) {
-      // Get the data and set the shapes
-      // Check if there is something is localstroage if there is open a warning box
       if(data){
         const oldShape = window.localStorage.getItem("shape");
         if(oldShape){
@@ -92,7 +109,7 @@ const CanvasLayout = ({id} : {id  :string | null}) => {
     setWarning(false);
   }
 
-  
+
 
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -148,6 +165,7 @@ const CanvasLayoutWrappedWithProviders = () => {
   const queryClient = new QueryClient()
   const searchParams = useSearchParams();
   const id = searchParams.get("id")
+  const roomId = searchParams.get("roomId")
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -156,7 +174,7 @@ const CanvasLayoutWrappedWithProviders = () => {
       <ConfigContextProvider>
         <CanvasManagerProvider>
           <SelectedShapeProvider>
-            <CanvasLayout id = {id}></CanvasLayout>
+            <CanvasLayout id = {id} roomId = {roomId}></CanvasLayout>
           </SelectedShapeProvider>
         </CanvasManagerProvider>
       </ConfigContextProvider>

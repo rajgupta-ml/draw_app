@@ -9,6 +9,10 @@ import type { sidebarType } from "@/context/useSidebar";
 import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext";
 import { strokeColor } from "@/components/ui/configLayout/constant";
 import type { ICommand } from "@/canvas/UndoAndRedoCmd/baseClass";
+import socketManager, { } from "./socketManager";
+import { generateMessage } from "@/lib/generateMessge";
+import { CollaborativeBehaviorManager } from "./CollaborativeManager";
+import type { recievedMessageType } from "@/types/collaborationTypes";
 
 interface IThemeEventDetail {
   theme: string;
@@ -32,7 +36,8 @@ export class CanvasManager {
   offScreenCanvasctx: CanvasRenderingContext2D;
   inputArea: HTMLDivElement;
   toggleSidebar : (args: sidebarType | null) => void
-  private interactionBehaviours: typeof InteractionBehaviourList =
+  collaborativeCanvasManager : CollaborativeBehaviorManager;
+  interactionBehaviours: typeof InteractionBehaviourList =
     InteractionBehaviourList;
   private undoStack: ICommand[] = [];
   private redoStack: ICommand[] = [];
@@ -52,6 +57,7 @@ export class CanvasManager {
     config: TextOptionsPlusGeometricOptions,
     private theme : string,
     toggleSidebar: (args: sidebarType | null) => void,
+    
   ) {
     this.config = config;
     this.canvas = canvas;
@@ -62,6 +68,7 @@ export class CanvasManager {
     this.roughCanvas = new RoughCanvas(this.offScreenCanvas);
     this.config.stroke = this.theme === "dark" ? strokeColor.dark[0] : strokeColor.light[0]; 
     this.selectedTool = TOOLS_NAME.RECT;
+    this.collaborativeCanvasManager = new CollaborativeBehaviorManager(this);
     this.canvas.style.cursor = "crosshair";
     this.toggleSidebar = toggleSidebar
     this.getShapeDataFromLocalStorage();
@@ -82,6 +89,8 @@ export class CanvasManager {
       "configChange",
       this.handlefetchConfig as EventListener,
     );
+
+    window.addEventListener("new-message", this.handleSocketMessage)
   };
 
   destroyEventListeners = () => {
@@ -98,9 +107,17 @@ export class CanvasManager {
       "configChange",
       this.handlefetchConfig as EventListener,
     );
+    window.removeEventListener("new-message", this.handleSocketMessage)
+
   };
 
-
+  private handleSocketMessage  =(event : Event) => {
+    const recievedShape = ((event as CustomEvent).detail) as recievedMessageType
+    if(!recievedShape){
+      return;
+    }
+    this.collaborativeCanvasManager.handleIncomingMessage(recievedShape)
+  }
   private getShapeDataFromLocalStorage = () => {
     const shapedata = window.localStorage.getItem("shape");
     if(shapedata){
@@ -183,7 +200,6 @@ export class CanvasManager {
   };
   private handleMouseMove = (e: MouseEvent) => {
     const behaviour = this.interactionBehaviours.get(this.selectedTool);
-
     if (behaviour) {
       behaviour.onMouseMove(this.createBehaviorContext(e));
     }
@@ -214,6 +230,25 @@ export class CanvasManager {
       -this.scrollPositionY,
     );
 
+    this.renderShapeOntoCanvas();
+
+    // Drawing the shape preview
+    if (!isScrolling) {
+      const behavior = this.interactionBehaviours.get(this.selectedTool);
+      if (behavior?.previewShape) {
+        const config = this.config ?? shapeConfig;
+        behavior.previewShape(this, config);
+      }
+    }
+    this.offScreenCanvasctx.restore();
+
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.drawImage(this.offScreenCanvas, 0, 0);
+    this.persistShapeDataInLocalStorage()
+  };
+
+
+  renderShapeOntoCanvas = () => {
     this.shapes.map((shape) => {
       if (shape.config) {
         const themeDefaultStroke =
@@ -231,21 +266,7 @@ export class CanvasManager {
         behavior.renderShapes(this, shape);
       }
     });
-
-    // Drawing the shape preview
-    if (!isScrolling) {
-      const behavior = this.interactionBehaviours.get(this.selectedTool);
-      if (behavior?.previewShape) {
-        const config = this.config ?? shapeConfig;
-        behavior.previewShape(this, config);
-      }
-    }
-    this.offScreenCanvasctx.restore();
-
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx.drawImage(this.offScreenCanvas, 0, 0);
-    this.persistShapeDataInLocalStorage()
-  };
+  }
 
   // Setter and Getter Methods
   setTool = (tool: TOOLS_NAME) => {
@@ -374,6 +395,13 @@ export class CanvasManager {
     return behavior?.getShapeRenderer ? behavior.getShapeRenderer() : null;
   }
 
+  broadcastMessage(eventName : string, data : string) {
+    if(socketManager.getRoomJoined){
+      const message = generateMessage(eventName, data);
+      socketManager.sendMessage(JSON.stringify(message));
+    }
+  }
+
   private createBehaviorContext(e: MouseEvent): BehaviorContext {
     const { x, y } = this.getCoordinateAdjustedByScrollAndScale(
       e.clientX,
@@ -381,10 +409,13 @@ export class CanvasManager {
     );
     return {
       manager: this,
+      collaborativeManager : this.collaborativeCanvasManager,
       rawX: e.clientX,
       rawY: e.clientY,
       x,
       y,
+
+
       executeCanvasCommnad: (command: ICommand) => this.executeCmd(command),
       isPointInShape: (shape: Shape, px: number, py: number) => {
         const renderer = this.getRendererForShape(shape);

@@ -33,7 +33,6 @@ const ConfigLayout = () => {
   useEffect(() => {
     prevConfig.current =selectedShape?.config ?? null;
     if (selectedShape && selectedShape.config) {
-      console.log("New Config", selectedShape.config);
       setConfig((prevConfig: TextOptionsPlusGeometricOptions) => ({
         ...prevConfig,
         ...selectedShape.config,

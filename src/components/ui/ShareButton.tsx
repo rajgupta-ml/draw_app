@@ -1,7 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import { compressToBase64 } from "lz-string"
+import { useRef, useState } from "react"
 import { useCanvasManagerContext } from "@/context/useCanvasManager"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -9,9 +8,11 @@ import { Play, Link, Copy, Check, Lock, Square, Loader2Icon } from "lucide-react
 import { Button } from "./button"
 import { useMutation } from "@tanstack/react-query"
 import { MUTATE } from "@/api/shareableApi"
+import { cn } from "@/lib/utils"
+import socketManager from "@/manager/socketManager"
 
 const ShareButton = () => {
-  const {postShapeData} = MUTATE
+  const {postShapeData, createRoom} = MUTATE
   const { canvasManager } = useCanvasManagerContext()
   const [isMainDialogOpen, setMainDialogOpen] = useState(false)
   const [isShareableLinkOpen, setShareableLinkOpen] = useState(false)
@@ -21,24 +22,43 @@ const ShareButton = () => {
   const [liveCollabLink, setLiveCollabLink] = useState("")
   const [userName, setUserName] = useState("Accomplished Swan")
   const [isSessionActive, setIsSessionActive] = useState(false)
-  const {mutate, isPending} = useMutation({mutationFn : postShapeData})
-  const handleStartSession = () => {
-    const { shapes } = canvasManager
-    const JSONShape = JSON.stringify(shapes)
-    const roomId = crypto.randomUUID()
-    const data = {
-      id: roomId,
-      json: JSONShape,
-    }
-    console.log("Starting live session with data:", data)
+  const {mutate : postShapeMutate , isPending : postIsPending} = useMutation({mutationFn : postShapeData})
+  const {mutate: createRoomMutate , isPending : createRoomIsPending} = useMutation({mutationFn : createRoom})
+  const roomId = useRef<string | null>(null);
 
+
+
+  const handleRoomCreation = () => {
+    roomId.current = crypto.randomUUID()
+    socketManager.setRoomId = roomId.current;
+    const collabUrl = `http:/localhost:3000?roomId=${roomId.current}`
+    createRoomMutate(
+      { id: roomId.current, name: userName },
+      {
+        onSuccess: () => {
+          setLiveCollabOpen(true)
+          setLiveCollabLink(collabUrl)
+        },
+        onError: () => setMainDialogOpen(false)
+      }
+    )
+    
+  }
+  
+  const handleStartSession = async () => {
     // Generate live collaboration link
-    const collabUrl = `${window.location.origin}/#room=${roomId}`
-    setLiveCollabLink(collabUrl)
+    const { shapes } = canvasManager
+    socketManager.setName = userName,
+    await new Promise((resolve) => {
+      socketManager.joinRoom()
+      setTimeout(resolve, 1000);
+    })
     setIsSessionActive(true)
-
     setMainDialogOpen(false)
     setLiveCollabOpen(true)
+    const JSONShape = JSON.stringify(shapes)
+    postShapeMutate({id : socketManager.roomId! ,json : JSONShape})
+
   }
 
   const handleExportToLink = async () => {
@@ -47,7 +67,7 @@ const ShareButton = () => {
 
 
     const id = crypto.randomUUID();
-    mutate({id,json : JSONShape})
+    postShapeMutate({id,json : JSONShape})
 
 
     const mockUrl = `http://localhost:3000?id=${id}`
@@ -97,7 +117,7 @@ const ShareButton = () => {
                 you draw.
               </p>
               <Button
-                onClick={handleStartSession}
+                onClick={handleRoomCreation}
                 className="cursor-pointer bg-accent hover:bg-accent/90 text-accent-foreground px-6 py-2 rounded-lg flex items-center gap-2 mx-auto"
               >
                 <Play className="w-4 h-4" />
@@ -123,7 +143,7 @@ const ShareButton = () => {
                 onClick={handleExportToLink}
                 className="cursor-pointer bg-accent hover:bg-accent/90 text-accent-foreground px-6 py-2 rounded-lg flex items-center gap-2 mx-auto"
               >
-                {!isPending ? (
+                {!postIsPending ? (
                   <>
                     <Link className="w-4 h-4" />
                     Export to Link
@@ -218,12 +238,17 @@ const ShareButton = () => {
               </div>
 
               <Button
-                onClick={handleStopSession}
-                className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground px-4 py-2 flex items-center gap-2 justify-center"
-              >
-                <Square className="w-4 h-4" />
-                Stop session
-              </Button>
+                  onClick={isSessionActive ? handleStopSession : handleStartSession}
+                  className={cn("w-full  px-4 py-2 flex items-center gap-2 justify-center cursor-pointer",
+                    isSessionActive
+                      ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                      : "bg-accent hover:bg-accent/90 text-accent-foreground",
+                  )}
+                >
+                  <Square className="w-4 h-4" />
+                  {isSessionActive ? "Stop session" : "Start session"}
+                </Button>
+
             </div>
           </div>
         </DialogContent>
