@@ -33,9 +33,7 @@ export enum MessageEnum {
 
 
 export interface ISession {
-    sessionId : string
     tool : TOOLS_NAME,
-    interactionBehaviour : string
     context : string,
     config : TextOptionsPlusGeometricOptions
 

@@ -28,7 +28,6 @@ export class GeometricBehaviour<T extends GeometricShape>
   private currentPosition = { startX: 0, startY: 0, endX: 0, endY: 0 };
   private clicked = false;
   private dragged = false;
-  private sessionId : string | null = null;
   constructor(private shapeRenders: IShapeRenders<T>) {}
   onMouseDown(context: BehaviorContext): void {
     const {x,y, collaborativeManager, rawX, rawY, calledFromCollaborationManager} = context
@@ -39,7 +38,7 @@ export class GeometricBehaviour<T extends GeometricShape>
     this.currentPosition.endX = x;
     this.currentPosition.endY = y;
     if(!calledFromCollaborationManager){
-      this.sessionId = collaborativeManager.createSession(this, {x,y,rawX,rawY});
+      collaborativeManager.createSession({x,y,rawX,rawY});
 
     }
   }
@@ -54,8 +53,8 @@ export class GeometricBehaviour<T extends GeometricShape>
     if (this.clicked && this.shapeRenders) {
       this.currentPosition.endX = x;
       this.currentPosition.endY = y;
-      if(this.sessionId && !calledFromCollaborationManager){
-        collaborativeManager.updateSession(this.sessionId, this, {x,y,rawX,rawY})
+      if(!calledFromCollaborationManager){
+        collaborativeManager.updateSession({x,y,rawX,rawY})
       }
       drawCanvas();
     }
@@ -66,11 +65,10 @@ export class GeometricBehaviour<T extends GeometricShape>
     this.clicked = false;
     if (this.dragged && this.shapeRenders) {
       const newShapeWithConfig = this.createNewShape(manager)
-      if(this.sessionId && !calledFromCollaborationManager) {
-        collaborativeManager.endSession(this.sessionId, this, {x,y,rawX,rawY})
+      if(!calledFromCollaborationManager) {
+        collaborativeManager.endSession({x,y,rawX,rawY})
       }
       executeCanvasCommnad(new AddShapeCommand(manager, newShapeWithConfig));
-      this.sessionId = null      
       drawCanvas(); 
     }
     this.dragged = false;

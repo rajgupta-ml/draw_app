@@ -29,7 +29,6 @@ export class EraserBehaviour implements IInteractionBehavior {
     [TOOLS_NAME.PEN, new Pen()],
     [TOOLS_NAME.TEXT, new Text()],
   ]);
-  private sessionId: string | null = null;
 
   constructor() {
     this.shapesToMarkForRemoval = new Map();
@@ -59,7 +58,7 @@ export class EraserBehaviour implements IInteractionBehavior {
     this.clicked = true;
     this.shapesToMarkForRemoval.clear();
     if (!calledFromCollaborationManager) {
-      this.sessionId = manager.collaborativeCanvasManager.createSession(this, {x,y,rawX,rawY});
+      manager.collaborativeCanvasManager.createSession( {x,y,rawX,rawY});
     }
   }
 
@@ -72,9 +71,9 @@ export class EraserBehaviour implements IInteractionBehavior {
     });
 
     
-    if (this.sessionId && !calledFromCollaborationManager) {
-      manager.collaborativeCanvasManager.endSession(this.sessionId, this,{x,y,rawX,rawY});
-      this.sessionId = null;
+    if (!calledFromCollaborationManager) {
+      manager.collaborativeCanvasManager.endSession({x,y,rawX,rawY});
+
     }
 
   
@@ -122,8 +121,8 @@ export class EraserBehaviour implements IInteractionBehavior {
       shapes[index] = newShape;
     });
     drawCanvas();
-    if (this.sessionId && !calledFromCollaborationManager) {
-      manager.collaborativeCanvasManager.updateSession(this.sessionId, this, {x,y,rawX,rawY});
+    if (!calledFromCollaborationManager) {
+      manager.collaborativeCanvasManager.updateSession({x,y,rawX,rawY});
     }
   }
   removeShape (executeCanvasCommnad : (command : ICommand) => void, manager : CanvasManager)  {

@@ -1,81 +1,57 @@
 import type { CanvasManager } from "./CanvasManager";
 import { MessageEnum, type IContext, type ISession, type recievedMessageType } from "@/types/collaborationTypes";
-import type { BehaviorContext, IInteractionBehavior } from "@/canvas/InteractionBehaviour/baseclass";
+import type { BehaviorContext } from "@/canvas/InteractionBehaviour/baseclass";
 import { TOOLS_NAME } from "@/types/toolsTypes";
 import type { ICommand } from "@/canvas/UndoAndRedoCmd/baseClass";
 import type { Shape } from "@/types/canvasTypes";
-import { AddShapeCommand, RemoveShapeCommand } from "@/canvas/UndoAndRedoCmd/ShapeCommand";
 
 
 
 export class CollaborativeBehaviorManager { 
 
-    private activeSession = new Map<string, ISession>()
     private oldTool : TOOLS_NAME = TOOLS_NAME.RECT;
     constructor (private canvasManager : CanvasManager) {
         
     }
-    createSession(interactionBehaviour : IInteractionBehavior, context : IContext){
-        const sessionId = crypto.randomUUID();
+    createSession(context : IContext){
         const session: ISession= {
-            sessionId,
             tool : this.canvasManager.selectedTool,
-            interactionBehaviour : JSON.stringify(interactionBehaviour.getState()),
             context : JSON.stringify(context),
             config: this.canvasManager.config
         }
         this.oldTool= this.canvasManager.selectedTool;
         this.canvasManager.broadcastMessage(MessageEnum.SESSION_CREATED, JSON.stringify(session))
-        this.activeSession.set(sessionId, session)
-        return sessionId;
-
     }
 
-    updateSession( sessionId : string, interactionBehaviour : IInteractionBehavior, context : IContext){
-        const activeLocalSession = this.activeSession.get(sessionId);
-        if(!activeLocalSession) return
+    updateSession(context : IContext){
         const session : ISession  = {
-            sessionId,
             tool : this.canvasManager.selectedTool,
             config: this.canvasManager.config,
             context : JSON.stringify(context),
-            interactionBehaviour : JSON.stringify(interactionBehaviour.getState())
         }
-
         this.canvasManager.broadcastMessage(MessageEnum.SESSION_UPDATED, JSON.stringify(session))
-        this.activeSession.set(sessionId, session)
     }
 
-    endSession (sessionId : string, interactionBehaviour : IInteractionBehavior, context : IContext) {
-        const activeLocalSession = this.activeSession.get(sessionId);
-        if(!activeLocalSession){
-            return
-        }
-
+    endSession ( context : IContext) {
         const session : ISession  = {
-            sessionId,
             tool : this.canvasManager.selectedTool,
             config : this.canvasManager.config,  
             context : JSON.stringify(context),  
-            interactionBehaviour : JSON.stringify(interactionBehaviour.getState())
     
         }
         this.canvasManager.broadcastMessage(MessageEnum.SESSION_DELETED, JSON.stringify(session))
-        this.activeSession.delete(sessionId);
     }
 
     handleIncomingMessage(receivedMessage : recievedMessageType) {
         const {message, type} = receivedMessage
-        const {config, context,interactionBehaviour,sessionId,tool} = message
+        const {config, context,tool} = message
         const behavior = this.canvasManager.interactionBehaviours.get(tool);
         this.canvasManager.selectedTool = tool;
         if(!behavior){
             return;
         }
         const parsedContext = JSON.parse(context);
-        const parsedInteractionBehaviour = JSON.parse(interactionBehaviour);
         this.canvasManager.config = config;
-        behavior.updateState(parsedInteractionBehaviour);
         switch(type) {
             case MessageEnum.SESSION_CREATED:
                 behavior.onMouseDown(this.createNewContextBehavior(parsedContext));
@@ -90,9 +66,9 @@ export class CollaborativeBehaviorManager {
                 break;
             default:
                 console.warn("Unknown message type received:", type);
-}
-
     }
+
+}
 
     createNewContextBehavior(context : IContext) : BehaviorContext {
         return {
