@@ -29,7 +29,9 @@ const ShareButton = () => {
 
 
   const handleRoomCreation = () => {
-    roomId.current = crypto.randomUUID()
+    if(!roomId.current){
+      roomId.current = crypto.randomUUID()
+    }
     socketManager.setRoomId = roomId.current;
     const collabUrl = `http:/localhost:3000?roomId=${roomId.current}`
     createRoomMutate(
@@ -42,7 +44,6 @@ const ShareButton = () => {
         onError: () => setMainDialogOpen(false)
       }
     )
-    
   }
   
   const handleStartSession = async () => {

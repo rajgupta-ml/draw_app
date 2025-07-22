@@ -6,6 +6,7 @@ import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext
 import type { CollaborativeBehaviorManager } from "@/manager/CollaborativeManager";
 
 export interface BehaviorContext {
+  calledFromCollaborationManager : boolean;
   x: number;
   y: number;
   rawX: number;
@@ -27,10 +28,9 @@ export interface IInteractionBehavior {
     config: TextOptionsPlusGeometricOptions,
   ): void;
   getShapeRenderer?(): IShapeRenders<Shape>;
-  getPosition?(): currentPositionType
-  setPosition?(position : currentPositionType) : void 
-  getClicked?(): boolean
-  setClicked?(clicked : boolean) : void 
-  getDragged?(): boolean
-  setDragged?(dragged : boolean) : void 
+  createNewShape?(manager : CanvasManager): Shape,
+  removeShape?(executeCanvasCommnad : (command : ICommand)=> void, manager : CanvasManager ) : void,
+  updateState(state : unknown): void
+  getState() : unknown
+  resetState(): void
 }

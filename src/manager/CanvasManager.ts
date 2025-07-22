@@ -390,7 +390,7 @@ export class CanvasManager {
     return { x: worldX, y: worldY };
   };
 
-  private getRendererForShape(shape: Shape): IShapeRenders<Shape> | null {
+  getRendererForShape(shape: Shape): IShapeRenders<Shape> | null {
     const behavior = this.interactionBehaviours.get(shape.type);
     return behavior?.getShapeRenderer ? behavior.getShapeRenderer() : null;
   }
@@ -408,6 +408,7 @@ export class CanvasManager {
       e.clientY,
     );
     return {
+      calledFromCollaborationManager : false,
       manager: this,
       collaborativeManager : this.collaborativeCanvasManager,
       rawX: e.clientX,

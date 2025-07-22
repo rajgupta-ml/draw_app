@@ -13,6 +13,7 @@ import { Text } from "../shapes/text";
 import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext";
 import { RemoveShapeCommand } from "../UndoAndRedoCmd/ShapeCommand";
 import type { CanvasManager } from "@/manager/CanvasManager";
+import type { ICommand } from "../UndoAndRedoCmd/baseClass";
 
 export class EraserBehaviour implements IInteractionBehavior {
   private clicked = false;
@@ -28,31 +29,61 @@ export class EraserBehaviour implements IInteractionBehavior {
     [TOOLS_NAME.PEN, new Pen()],
     [TOOLS_NAME.TEXT, new Text()],
   ]);
+  private sessionId: string | null = null;
 
   constructor() {
     this.shapesToMarkForRemoval = new Map();
   }
-  onMouseDown(): void {
+
+  getState() {
+    return {
+      clicked: this.clicked,
+      currentMouseX: this.currentMouseX,
+      currentMouseY: this.currentMouseY,
+      shapesToMarkForRemoval: Array.from(this.shapesToMarkForRemoval.values()).map(item => item.shape),
+    };
+  }
+
+  updateState(state: any) {
+    this.clicked = state.clicked;
+    this.currentMouseX = state.currentMouseX;
+    this.currentMouseY = state.currentMouseY;
+  }
+
+  resetState() {
+    this.clicked = false;
+    this.shapesToMarkForRemoval.clear();
+  }
+
+  onMouseDown({ manager, calledFromCollaborationManager, x, y, rawX,rawY }: BehaviorContext): void {
     this.clicked = true;
     this.shapesToMarkForRemoval.clear();
+    if (!calledFromCollaborationManager) {
+      this.sessionId = manager.collaborativeCanvasManager.createSession(this, {x,y,rawX,rawY});
+    }
   }
 
-  onMouseUp({ executeCanvasCommnad, manager }: BehaviorContext): void {
-    const { drawCanvas } = manager;
+  onMouseUp({ executeCanvasCommnad, manager, calledFromCollaborationManager , x,y,rawX,rawY }: BehaviorContext): void {
     this.clicked = false;
+    const shapeToRemove = this.removeShape(executeCanvasCommnad, manager);
 
-    const sortedShapesToRemove = Array.from(
-      this.shapesToMarkForRemoval.values(),
-    ).sort((a, b) => b.index - a.index);
-
-    sortedShapesToRemove.forEach(({ shape, index }) => {
+    shapeToRemove.forEach(({ shape, index }) => {
       executeCanvasCommnad(new RemoveShapeCommand(manager, shape, index));
     });
+
+    
+    if (this.sessionId && !calledFromCollaborationManager) {
+      manager.collaborativeCanvasManager.endSession(this.sessionId, this,{x,y,rawX,rawY});
+      this.sessionId = null;
+    }
+
+  
     this.shapesToMarkForRemoval.clear();
-    drawCanvas();
+    manager.drawCanvas();
+
   }
 
-  onMouseMove({ x, y, manager }: BehaviorContext): void {
+  onMouseMove({ x, y, manager, calledFromCollaborationManager, rawX, rawY }: BehaviorContext): void {
     const shapesToUpdateForPreview: { index: number; newShape: Shape }[] = [];
     const { shapes, config, drawCanvas } = manager;
     this.currentMouseX = x;
@@ -81,21 +112,27 @@ export class EraserBehaviour implements IInteractionBehavior {
             ...shape,
             config: newConfig,
           };
-
           if (newShape) {
             shapesToUpdateForPreview.push({ index, newShape });
           }
         }
       }
     });
-
     shapesToUpdateForPreview.forEach(({ index, newShape }) => {
       shapes[index] = newShape;
     });
-
     drawCanvas();
+    if (this.sessionId && !calledFromCollaborationManager) {
+      manager.collaborativeCanvasManager.updateSession(this.sessionId, this, {x,y,rawX,rawY});
+    }
   }
-
+  removeShape (executeCanvasCommnad : (command : ICommand) => void, manager : CanvasManager)  {
+    console.log(this.shapesToMarkForRemoval)
+    return Array.from(
+      this.shapesToMarkForRemoval.values(),
+    ).sort((a, b) => b.index - a.index);
+    
+  }
   previewShape(manager: CanvasManager): void {
     const { roughCanvas } = manager;
     // Draw your eraser cursor here

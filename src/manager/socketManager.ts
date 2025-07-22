@@ -73,7 +73,6 @@ export class SocketManager {
             const messageString = JSON.stringify(data);
             this.ws!.send(messageString);
             this.setRoomJoined = true
-            // console.log("Message sent:", data);
         } catch (error) {
             console.error("Failed to send message:", error);
         }

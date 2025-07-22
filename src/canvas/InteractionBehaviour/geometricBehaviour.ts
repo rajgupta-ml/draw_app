@@ -5,6 +5,7 @@ import type {
   LineShape,
   RectShape,
   RightArrowShape,
+  Shape,
 } from "@/types/canvasTypes";
 import type { IShapeRenders } from "../shapes/baseClass";
 import type {
@@ -30,40 +31,47 @@ export class GeometricBehaviour<T extends GeometricShape>
   private sessionId : string | null = null;
   constructor(private shapeRenders: IShapeRenders<T>) {}
   onMouseDown(context: BehaviorContext): void {
-    const {x,y, collaborativeManager, manager} = context
+    const {x,y, collaborativeManager, rawX, rawY, calledFromCollaborationManager} = context
     this.clicked = true;
     this.currentPosition.startX = x;
     this.currentPosition.startY = y;
 
     this.currentPosition.endX = x;
     this.currentPosition.endY = y;
-    this.sessionId = collaborativeManager.createSession(manager.selectedTool, this.currentPosition, manager.config)
-    
+    if(!calledFromCollaborationManager){
+      this.sessionId = collaborativeManager.createSession(this, {x,y,rawX,rawY});
 
+    }
   }
+
+
   onMouseMove( context : BehaviorContext): void {
-    const {manager, x,y, collaborativeManager} = context
+    const {x,y, collaborativeManager, manager, rawX, rawY, calledFromCollaborationManager} = context
+    
     const { drawCanvas } = manager;
+    this.dragged = true;
+    console.log({shapeRenders : this.shapeRenders})
     if (this.clicked && this.shapeRenders) {
       this.currentPosition.endX = x;
       this.currentPosition.endY = y;
-      collaborativeManager.updateSession(this.sessionId!, this.currentPosition, manager.config)
-      // drawCanvas();
-      this.dragged = true;
+      if(this.sessionId && !calledFromCollaborationManager){
+        collaborativeManager.updateSession(this.sessionId, this, {x,y,rawX,rawY})
+      }
+      drawCanvas();
     }
   }
   onMouseUp(context: BehaviorContext): void {
-    const {manager, executeCanvasCommnad, collaborativeManager} = context
-    // const { drawCanvas } = manager;
+    const {x,y, collaborativeManager, executeCanvasCommnad, manager, rawX, rawY, calledFromCollaborationManager} = context
+    const { drawCanvas } = manager;
     this.clicked = false;
     if (this.dragged && this.shapeRenders) {
-      const newShape = this.shapeRenders.createShape(this.currentPosition);
-      const updatedConfig = {...manager.config};
-      const newShapeWithConfig = { ...newShape,  config : updatedConfig };
-      // executeCanvasCommnad(new AddShapeCommand(manager, newShapeWithConfig));
-      collaborativeManager.endSession(this.sessionId!, newShapeWithConfig)
+      const newShapeWithConfig = this.createNewShape(manager)
+      if(this.sessionId && !calledFromCollaborationManager) {
+        collaborativeManager.endSession(this.sessionId, this, {x,y,rawX,rawY})
+      }
+      executeCanvasCommnad(new AddShapeCommand(manager, newShapeWithConfig));
       this.sessionId = null      
-      // drawCanvas(); 
+      drawCanvas(); 
     }
     this.dragged = false;
   }
@@ -75,7 +83,6 @@ export class GeometricBehaviour<T extends GeometricShape>
   }
   previewShape(manager: CanvasManager, config: TextOptionsPlusGeometricOptions): void {
     const { roughCanvas, offScreenCanvasctx } = manager;
-
     if (this.shapeRenders && this.dragged) {
       const shape = this.shapeRenders.createShape(this.currentPosition);
       const newShapeWithConfig = { ...shape, config };
@@ -90,25 +97,56 @@ export class GeometricBehaviour<T extends GeometricShape>
     return this.shapeRenders;
   }
 
-  getPosition() : currentPositionType {
-    return (this.currentPosition as currentPositionType)
-  }
-
-  setPosition(position : currentPositionType) {
-    this.currentPosition = position
-  }
-  getClicked() : boolean {
-    return this.clicked
-  }
-
-  setClicked(clicked : boolean) {
-    this.clicked = clicked
-  } 
-  getDragged() : boolean {
-    return this.dragged 
-  }
-
-  setDragged(dragged : boolean) {
-    this.dragged = dragged
+  updateState(state: unknown): void {
+      if(isGeometricBehaviorState(state)){
+        this.clicked = state.clicked,
+        this.currentPosition = state.currentPosition
+        this.dragged = state.dragged
+      }
   }  
+
+  getState() : unknown {
+    return {
+      clicked :this.clicked,
+      currentPosition : this.currentPosition,
+      dragged : this.dragged
+    }
+  }
+
+  resetState(): void {
+    this.clicked = false,
+    this.dragged = false,
+    this.currentPosition = {startX : 0, startY : 0, endX : 0, endY : 0}
+  }
+
+  createNewShape(manager : CanvasManager) : Shape {
+    const newShape = this.shapeRenders.createShape(this.currentPosition);
+    const updatedConfig = {...manager.config};
+    const newShapeWithConfig = { ...newShape,  config : updatedConfig };
+    return newShapeWithConfig
+  }
+
+}
+
+
+interface IGeometricBehaviorState {
+  currentPosition: currentPositionType;
+  clicked: boolean;
+  dragged: boolean;
+}
+
+// Create a type guard function to check if an unknown object matches the state shape
+function isGeometricBehaviorState(state: unknown): state is IGeometricBehaviorState {
+    const s = state as IGeometricBehaviorState;
+    return (
+        s &&
+        typeof s === 'object' &&
+        typeof s.clicked === 'boolean' &&
+        typeof s.dragged === 'boolean' &&
+        s.currentPosition &&
+        typeof s.currentPosition.startX === 'number' &&
+        typeof s.currentPosition.startY === 'number' &&
+        typeof s.currentPosition.endX === 'number' &&
+        typeof s.currentPosition.endY === 'number'
+    );
 }

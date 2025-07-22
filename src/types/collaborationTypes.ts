@@ -1,6 +1,7 @@
 import type { TextOptionsPlusGeometricOptions } from "@/context/useConfigContext"
 import type { currentPositionType, Shape } from "./canvasTypes"
 import type { TOOLS_NAME } from "./toolsTypes"
+import type { IInteractionBehavior } from "@/canvas/InteractionBehaviour/baseclass"
 
 type MessageType = {
     type : MessageEnum,
@@ -11,7 +12,14 @@ type MessageType = {
 
 export  type recievedMessageType =  {
     type : MessageEnum,
-    message : ISession | IDeletedSession
+    message : ISession
+}
+
+export interface IContext { 
+    rawX : number,
+    rawY : number,
+    x : number,
+    y : number,
 }
 
 export enum MessageEnum {
@@ -21,17 +29,14 @@ export enum MessageEnum {
     SESSION_CREATED = "create-session",
     SESSION_UPDATED = "update-session",
     SESSION_DELETED = "delete-session",
-  
-  }
+}
+
 
 export interface ISession {
     sessionId : string
     tool : TOOLS_NAME,
-    state : {
-        currentPosition : currentPositionType,
-        clicked : boolean,
-        dragged : boolean
-    },
+    interactionBehaviour : string
+    context : string,
     config : TextOptionsPlusGeometricOptions
 
 }
