@@ -2,7 +2,7 @@
 
 This is a real-time collaborative whiteboard application built with Next.js and TypeScript. It provides a feature-rich canvas for users to draw, sketch, and collaborate on ideas using various tools and shapes. The application uses `rough.js` to give the drawings a hand-drawn, sketchy appearance.
 
-**https://drive.google.com/file/d/1bP9dK4xJgMvj1a0ljOa6NqccUJXX_q0q/view?usp=sharing**
+**<img width="1780" height="1001" alt="image" src="https://github.com/user-attachments/assets/b258dfcb-11ae-4b9d-b3f0-46d932655d58" />**
 
 ## Features
 
